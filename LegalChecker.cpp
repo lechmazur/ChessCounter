@@ -145,14 +145,14 @@ bool LegalChecker::checkCounts() const
 	std::array<int, 2> checkerboardBlack = { 0, 0 };	//black or white checkboard square
 	for (int n = 0; n < 32; n++)
 	{
+		int blackOrWhite = (int(rank_of(squares[n])) + int(file_of(squares[n]))) % 2;
 		if (pieces[n] == W_BISHOP)
-			checkerboardWhite[(int(rank_of(squares[n])) + int(file_of(squares[n]))) % 2]++;
-		if (pieces[n] == B_BISHOP)
-			checkerboardBlack[(int(rank_of(squares[n])) + int(file_of(squares[n]))) % 2]++;
+			checkerboardWhite[blackOrWhite]++;
+		else if (pieces[n] == B_BISHOP)
+			checkerboardBlack[blackOrWhite]++;
 	}
 
-	int extrasWP = 0;
-	extrasWP += std::max(count[W_BISHOP] - 2, 0);
+	int extrasWP = std::max(count[W_BISHOP] - 2, 0);
 	if (count[W_BISHOP] == 2 && (checkerboardWhite[0] == 2 || checkerboardWhite[1] == 2))
 		extrasWP += 1;		//If there are two bishops but on the same color squares, that means one of them was promoted
 	extrasWP += std::max(count[W_KNIGHT] - 2, 0);
@@ -162,8 +162,7 @@ bool LegalChecker::checkCounts() const
 	if (count[W_PAWN] + extrasWP > 8)		//Can't have promotions without losing pawns
 		return false;
 
-	int extrasBP = 0;
-	extrasBP += std::max(count[B_BISHOP] - 2, 0);
+	int extrasBP = std::max(count[B_BISHOP] - 2, 0);
 	if (count[B_BISHOP] == 2 && (checkerboardBlack[0] == 2 || checkerboardBlack[1] == 2))
 		extrasBP += 1;
 	extrasBP += std::max(count[B_KNIGHT] - 2, 0);
@@ -242,9 +241,8 @@ bool LegalChecker::checkBishops() const
 
 	for (File c : {FILE_B, FILE_D, FILE_E, FILE_G})
 	{
-		if (isBishopBehindTwoPawns(W_PAWN, c, RANK_2, RANK_1))
-			return false;
-		if (isBishopBehindTwoPawns(B_PAWN, c, RANK_7, RANK_8))
+		if (isBishopBehindTwoPawns(W_PAWN, c, RANK_2, RANK_1)
+			 || isBishopBehindTwoPawns(B_PAWN, c, RANK_7, RANK_8))
 			return false;
 	}
 
@@ -259,27 +257,19 @@ bool LegalChecker::checkBishops() const
 
 	for (File c : {FILE_C, FILE_F})
 	{
-		if (isBishopBehindTwoPawnsWrongColor(W_PAWN, B_BISHOP, c, RANK_2, RANK_1))
-		{
+		if (isBishopBehindTwoPawnsWrongColor(W_PAWN, B_BISHOP, c, RANK_2, RANK_1)
+			|| isBishopBehindTwoPawnsWrongColor(B_PAWN, W_BISHOP, c, RANK_7, RANK_8))
 			return false;
-		}
-		if (isBishopBehindTwoPawnsWrongColor(B_PAWN, W_BISHOP, c, RANK_7, RANK_8))
-		{
-			return false;
-		}
 	}
 
 	//If the pawns were not moved, bishops need to be at their original locations
 	// .p.p..
 	// ..B...
 	//7k/8/8/8/8/8/1P1P4/2B1K3 w - - 0 2
-	if (pieceOn(SQ_B2) == W_PAWN && pieceOn(SQ_D2) == W_PAWN && pieceOn(SQ_C1) != W_BISHOP)
-		return false;
-	if (pieceOn(SQ_E2) == W_PAWN && pieceOn(SQ_G2) == W_PAWN && pieceOn(SQ_F1) != W_BISHOP)
-		return false;
-	if (pieceOn(SQ_B7) == B_PAWN && pieceOn(SQ_D7) == B_PAWN && pieceOn(SQ_C1) != B_BISHOP)
-		return false;
-	if (pieceOn(SQ_E7) == B_PAWN && pieceOn(SQ_G7) == B_PAWN && pieceOn(SQ_F1) != B_BISHOP)
+	if ((pieceOn(SQ_B2) == W_PAWN && pieceOn(SQ_D2) == W_PAWN && pieceOn(SQ_C1) != W_BISHOP)
+		|| (pieceOn(SQ_E2) == W_PAWN && pieceOn(SQ_G2) == W_PAWN && pieceOn(SQ_F1) != W_BISHOP)
+		|| (pieceOn(SQ_B7) == B_PAWN && pieceOn(SQ_D7) == B_PAWN && pieceOn(SQ_C1) != B_BISHOP)
+		|| (pieceOn(SQ_E7) == B_PAWN && pieceOn(SQ_G7) == B_PAWN && pieceOn(SQ_F1) != B_BISHOP))
 		return false;
 
 	return true;
@@ -673,9 +663,8 @@ bool LegalChecker::blackPossCastled(const Attacker& att) const
 	bool blackPossCastled = false;
 	if (att.piece == B_ROOK)
 	{
-		if (att.pos == SQ_F8 && pieceOn(SQ_G8) == B_KING && pieceOn(SQ_E8) == NO_PIECE && pieceOn(SQ_H8) == NO_PIECE)
-			blackPossCastled = true;
-		if (att.pos == SQ_D8 && pieceOn(SQ_C8) == B_KING && pieceOn(SQ_E8) == NO_PIECE && pieceOn(SQ_A8) == NO_PIECE && pieceOn(SQ_B8) == NO_PIECE)
+		if ((att.pos == SQ_F8 && pieceOn(SQ_G8) == B_KING && pieceOn(SQ_E8) == NO_PIECE && pieceOn(SQ_H8) == NO_PIECE)
+			|| (att.pos == SQ_D8 && pieceOn(SQ_C8) == B_KING && pieceOn(SQ_E8) == NO_PIECE && pieceOn(SQ_A8) == NO_PIECE && pieceOn(SQ_B8) == NO_PIECE))
 			blackPossCastled = true;
 	}
 	return blackPossCastled;
@@ -731,8 +720,7 @@ bool LegalChecker::checkSingleAttacked() const
 			return false;
 		Bitboard bb = (shift<NORTH>(att.abit) | shift<NORTH_WEST>(att.abit) | shift<NORTH_EAST>(att.abit)) & ~posBTM.pieces();
 
-		bool anyOk = bb != 0;
-		if (!anyOk)
+		if (bb == 0)
 			return false;
 	}
 
