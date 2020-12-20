@@ -181,7 +181,6 @@ bool LegalChecker::checkCounts() const
 	if (extrasWP >= 9 || extrasBP >= 9)
 		return false;
 
-
 	return true;
 }
 
@@ -785,7 +784,6 @@ bool LegalChecker::checkConditions()
 		return false;
 
 	setSFPositions();
-	//print(posWTM.fen());
 
 	if (posBTM.checkers())	//Black king in check = illegal position
 		return false;
