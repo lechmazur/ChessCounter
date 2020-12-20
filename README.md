@@ -9,7 +9,7 @@ As we can see there is a huge variety and unfortunately these estimates are most
 
 First, we place two kings. This can be done in 3,612 different legal ways (so that they are not on neighboring squares). Second, we pick 32-2=30 squares out of the remaining 64-2=62. There are C(62, 30) = 450,883,717,216,034,179 (4.5088E+17) combinations in which way we can do this. There are 11 different possible pieces (including empty square) that can be placed in each of these squares (Q, R, B, N, P, q, r, b, n, p, empty). So there are 11^30=17,449,402,268,886,407,318,558,803,753,801 (1.74495E+31) possible ways to fill these 30 squares. This gives a raw number of 3,612 * 4.5088E+17 * 1.74495E+31 = 2.84178E+52 pseudo-legal positions to consider.
 
-Each of these positions can be white-to-move or black-to-move. Some of them might also have various castling and en passant rights. This program creates billions of random positions out of these 2.84178E+52 possibilities and applies various rules to check whether they are legal and whether castling or en passant are possible and calculates an estimate of all possible legal positions. In addition, it can estimate the number of “likely” legal positions (e.g. when there are no more than total 6 queens on board and there were no underpromotions).
+Each of these positions can be white-to-move or black-to-move. Some of them might also have various castling and en passant rights. This program using a Monte Carlo approach - it creates billions of random positions out of these 2.84178E+52 possibilities and applies various rules to check whether they are legal and whether castling or en passant are possible and calculates an estimate of all possible legal positions. In addition, it can estimate the number of "likely" legal positions (e.g. when there are no more than total 6 queens on board and there were no underpromotions).
 
 The program counts just positions with white-to-move and then doubles the result. It counts the number of possible castling moves and en passant moves and weighs each random position as more than 1 when it’s needed. For example, if a position allows white short, white long, and black short castling and there are black pawns on f5 and c5 (with empty squares at f6, f7, and c6, and c7) and white pawns at g5 and b5, it will count at 2^3*3=24 positions.
 The following rules for determining if a position is legal are used:
@@ -58,7 +58,7 @@ Highest estimate of "realistic" possible legal chess position (counts en passant
 
 If we were to create computer endgame tablebases, we could reduce the number of positions to be considered. For example, for positions in which there are no pawns, there are horizontal, vertical, and diagonal symmetries. 
 
-## Notes:
+## Notes
 
 This program uses Stockfish for fast bitboard-based computation (https://github.com/official-stockfish/Stockfish, GPL-3.0, license included) and it is also released under GPL-3.0. It uses PCG random number generator.
 
