@@ -21,29 +21,31 @@ The following rules for determining if a position is legal are used:
 
 4. The total number of promoted pieces plus the number of pawns per side can’t be more than 8. A piece is counted as promoted if it is a 2nd+ queen, 3rd+ rook, 3rd+ knight, 3rd+ bishop, or a 2nd bishop that is on the same-colored squares as the 1st bishop
 
-5. The number of promoted pieces (counted separately for white and black) can’t be more than the number of captures. E.g. if there is an extra white queen and an extra black bishop, it means that at least 1 piece of any side was captured.
+5. The number of promoted pieces (counted separately for white and black) can’t be more than the number of captures of pieces. E.g. if there is an extra white queen and an extra black bishop, it means that at least 1 piece of any side was captured.
 
-6. A bishop that is not on its starting position can’t be at positions unreachable because of pawns still at their starting positions. E.g. if there is a white pawn at b2, there can’t be a bishop at a1 or if there are black pawns at d7 and f7, there can’t be a bishop at e8.
+6. One capture of a pawn allows 3 total promotions (2 on the capturing side, 1 on the captured side). 
 
-7. If there are still pawns initially blocking a bishop (e.g. white pawns at b2 and d2), this means that there has to a white bishop (at c1) behind them.
+7. A bishop that is not on its starting position can’t be at positions unreachable because of pawns still at their starting positions. E.g. if there is a white pawn at b2, there can’t be a bishop at a1 or if there are black pawns at d7 and f7, there can’t be a bishop at e8.
 
-8. Various pawn structures are impossible from the starting chess position, especially on the sides. For example, white pawns at a2, b2, a3, white pawns at a2, a3, c2, a4, white pawns at a3, a4, b3, c2, white pawns at b2, c2, d2, c3, etc.
+8. If there are still pawns initially blocking a bishop (e.g. white pawns at b2 and d2), this means that there has to a white bishop (at c1) behind them.
 
-9. Each extra pawn on the same file means the opposite-side piece was captured. E.g. if there are white pawns at d2, d4, and d6, it means that at least two black pieces were captured.
+9. Various pawn structures are impossible from the starting chess position, especially on the sides. For example, white pawns at a2, b2, a3, white pawns at a2, a3, c2, a4, white pawns at a3, a4, b3, c2, white pawns at b2, c2, d2, c3, etc.
 
-10. If black king is in check when it’s white-to-move then the position is illegal.
+10. Each extra pawn on the same file means the opposite-side piece was captured. E.g. if there are white pawns at d2, d4, and d6, it means that at least two black pieces were captured.
 
-11. If white king is in check by three or more attackers, the position is illegal.
+11. If black king is in check when it’s white-to-move then the position is illegal.
 
-12. A position in which white king is checked by two black attackers is legal only under certain circumstances:
+12. If white king is in check by three or more attackers, the position is illegal.
 
-     12A. There was a double-discovered en passant move. The white king would have to be above or below the source square of the en passant capturing black pawn. It would have to be attacked through the rays crossing that source square and the square where the captured pawn was previously.
+13. A position in which white king is checked by two black attackers is legal only under certain circumstances:
 
-     12B. One of the checking pieces was blocking another currently checking piece from checking previously. This means that, for example, the checks can’t be from two rooks at once. If a piece that moved to enable the discovery check has an attacking slider piece behind it that would be checking the white king if the square was empty, that position would have been illegal (black-to-move and white king in check).
+     A. There was a double-discovered en passant move. The white king would have to be above or below the source square of the en passant capturing black pawn. It would have to be attacked through the rays crossing that source square and the square where the captured pawn was previously.
 
-     12C. Black previously made a promotion move. The white king would have to be attacked by the promoted piece and this pawn must have been previously blocking another piece from checking.
+     B. One of the checking pieces was blocking another currently checking piece from checking previously. This means that, for example, the checks can’t be from two rooks at once. If a piece that moved to enable the discovery check has an attacking slider piece behind it that would be checking the white king if the square was empty, that position would have been illegal (black-to-move and white king in check).
 
-13. A position in which white king is checked by one black attacker is illegal if the checking piece has no place to come from because it would have been checking the white king at all possible source locations before it moved (or is just completely blocked off). This rule has to consider that castling could result in a check and that a black piece on the 1st rank could have captured or moved like a pawn (e.g. a rook at d1 could have come from e2). A pawn that hasn’t moved from the starting location can’t be checking (e.g. black pawn at e7).
+     C. Black previously made a promotion move. The white king would have to be attacked by the promoted piece and this pawn must have been previously blocking another piece from checking.
+
+14. A position in which white king is checked by one black attacker is illegal if the checking piece has no place to come from because it would have been checking the white king at all possible source locations before it moved (or is just completely blocked off). This rule has to consider that castling could result in a check and that a black piece on the 1st rank could have captured or moved like a pawn (e.g. a rook at d1 could have come from e2). A pawn that hasn’t moved from the starting location can’t be checking (e.g. black pawn at e7).
 
 
 ## Results
