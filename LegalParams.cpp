@@ -83,7 +83,6 @@ void LegalParams::setup(int argc, char* argv[], int nthreads)
 		x += 3252351;
 	}
 
-
 	states.resize(nthreads);
 	states2.resize(nthreads);
 	for (auto& s : states)

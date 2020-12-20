@@ -422,7 +422,7 @@ bool LegalChecker::checkPawnStructures() const
 
 bool LegalChecker::checkSameFileAndCounts() const
 {
-	//Each extra additional pawn on the same file means the opposite piece has been captured
+	//Each extra additional pawn on the same file means the opposite-side piece was captured
 	//7k/8/8/2P3P1/2P5/6P1/6P1/4K3 w - - 0 2
 	auto countSameFilePawns = [&](Piece pieceCounted)
 	{
@@ -573,7 +573,6 @@ void LegalChecker::makeListOfAttackers()
 bool LegalChecker::isDoubleDiscEPPossible() const
 {
 	//If white is checked by two black pieces, it has to be a result of a discovered check
-	//It can't be from castling
 	Square asBishopLoc = SQ_NONE;	//Diagonal check
 	Square asRookLoc = SQ_NONE;	//Horizontal or vertical check
 
@@ -616,6 +615,7 @@ bool LegalChecker::isDoubleDiscEPPossible() const
 
 bool LegalChecker::checkDoubleAttacked() const
 {
+	//It can't be from castling
 	bool doubleDiscEPPossible = isDoubleDiscEPPossible();
 
 	if (!doubleDiscEPPossible)
@@ -633,7 +633,7 @@ bool LegalChecker::checkDoubleAttacked() const
 			auto possBlockers = (attackers[q].middleSquares & attacks.comeFrom);
 			bool attackedFromBehind = false;
 
-			//If a piece that moved to enable discovery check has an attacking slider piece behind it 
+			//If a piece that moved to enable the discovery check has an attacking slider piece behind it 
 			//that would be checking the white king if the square was empty,
 			//it means that the white king was attacked on that ray earlier, which would've been illegal before black move
 			//7k/6q1/8/4b3/3K2r1/8/8/8 w - - 0 2
@@ -656,7 +656,6 @@ bool LegalChecker::checkDoubleAttacked() const
 					pFile = File(pFile + signFile);
 					pRank = Rank(pRank + signRank);
 				}
-
 			}
 
 			if (possBlockers != 0 && !attackedFromBehind)

@@ -31,9 +31,9 @@ void Runner::posEstimate(int argc, char* argv[])
 {
 	LegalParams lp;
 	//Choose parameters
-	lp.underpromotions = true;
-	lp.maxQueensOneSide = -1;
-	lp.maxQueensTotal = -1;
+	lp.underpromotions = false;
+	lp.maxQueensOneSide = 3;
+	lp.maxQueensTotal = 6;
 	const int nthreads = std::max(1, omp_get_max_threads() - 1);
 	lp.setup(argc, argv, nthreads);
 
