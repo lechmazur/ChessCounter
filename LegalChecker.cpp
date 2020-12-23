@@ -566,7 +566,7 @@ bool LegalChecker::checkSameFileAndCounts() const
 {
 	//Each extra additional pawn on the same file means the opposite-side piece was captured
 	//7k/8/8/2P3P1/2P5/6P1/6P1/4K3 w - - 0 2
-	auto countSameFilePawns = [&](Piece pieceCounted)
+	auto countSameFilePawns = [this](Piece pieceCounted)
 	{
 		int sameCol = 0;
 		for (File c = FILE_A; c <= FILE_H; ++c)
@@ -585,8 +585,28 @@ bool LegalChecker::checkSameFileAndCounts() const
 
 	int sameColW = countSameFilePawns(W_PAWN);
 	int sameColB = countSameFilePawns(B_PAWN);
-
 	if (nBlack + sameColW > 16 || nWhite + sameColB > 16)
+		return false;
+
+
+	int whiteAboveBlack = 0;
+	for (File c = FILE_A; c <= FILE_H; ++c)
+	{
+		Rank foundWhite = RANK_NB;
+		Rank foundBlack = RANK_NB;
+		for (Rank y = RANK_1; y <= RANK_8; ++y)
+		{
+			auto p = pieceFR(c, y);
+			if (p == B_PAWN && foundBlack == RANK_NB)
+				foundBlack = y;
+			if (p == W_PAWN)
+				foundWhite = y;
+		}
+		if (foundWhite != RANK_NB && foundBlack != RANK_NB && foundBlack < foundWhite)
+			whiteAboveBlack++;
+	}
+
+	if (nBlack + nWhite + whiteAboveBlack > 32)
 		return false;
 
 	return true;

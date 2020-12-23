@@ -31,7 +31,7 @@ template<typename TEl>
 }
 
 
-bool checkFromFen(const std::string& fen, LegalParams& lp)
+bool checkFromFen(const std::string& fen, LegalParams& lp, bool restricted)
 {
 	LegalChecker lc;
 	lc.init(&lp, omp_get_thread_num());
@@ -39,6 +39,8 @@ bool checkFromFen(const std::string& fen, LegalParams& lp)
 	lc.createCounts();
 	lc.createTotalCounts();
 	bool isok = lc.checkConditions();
+	if (isok && restricted)
+		isok = lc.checkAdditionalConditions(false, 3, 6);
 	cout << fen << "  result = " << isok << endl;
 	return isok;
 }
@@ -46,8 +48,19 @@ bool checkFromFen(const std::string& fen, LegalParams& lp)
 
 void validate(LegalParams& lp)
 {
+	vector<std::pair<std::string, bool>> fensR =
+	{
+		{"r3bK2/pPp2R1p/3Ppq1P/3k4/2r2P2/1p1p1PRQ/1Bn2Pp1/BN2Q2N w - - 0 1", false}
+	};
+
+	for (const auto& [fen, val] : fensR)
+	{
+		assert(checkFromFen(fen, lp, true) == val);
+	}
+
 	vector<std::pair<std::string, bool>> fens =
 	{
+		{"8/kqrqN1P1/6Q1/1PP1KB1P/n1p1bQp1/bQn1ppN1/RBP3rp/2qR4 w - - 0 1", false}, 
 		{"6k1/8/4n3/1P6/P4n2/3B3R/4BB2/K7 w - - 0 8", true},
 		{"rnbqkbnr/q1q1q1q1/8/Q2Q1QQ1/8/8/1Q1Q1Q1R/RNBQKBNR w KQkq - 0 8", true},
 		{"2bqkbnr/2pppppp/8/1p6/8/3Q4/PQQPPPPP/QQ1QKBNR w Kk - 0 8", false},
@@ -60,9 +73,10 @@ void validate(LegalParams& lp)
 		{"2bqkbnr/p1pppppp/8/1p6/8/8/PQQPPPPP/RNBQKBNR w KQk - 0 8", true},
 		{"2bqkbnr/p1pppppp/8/1p6/8/3Q4/PQQPPPPP/RN1QKBNR w KQk - 0 8", false}
 	};
+
 	for (const auto& [fen, val] : fens)
 	{
-		assert(checkFromFen(fen, lp) == val);
+		assert(checkFromFen(fen, lp, false) == val);
 	}
 }
 
@@ -139,6 +153,8 @@ void Runner::posEstimate(int argc, char* argv[])
 					pieceCountsByThread[tnum][(int)p][lc.getCount()[p]]++;
 
 				bool isokRestricted = lc.checkAdditionalConditions(false, 3, 6);
+				//if (isokRestricted)
+					//cout << lc.fen() << endl;
 				int countAs = lc.countCastling();		//If there are castling possibilities, this position counts as multiple (2^castling_possibilties)
 				int epPoss = lc.countEnPassantPossibilities();		//En passant possibilities
 
