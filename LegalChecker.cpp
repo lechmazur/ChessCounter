@@ -418,10 +418,10 @@ bool LegalChecker::checkBishops() const
 	// .p.p..
 	// ..B...
 	//7k/8/8/8/8/8/1P1P4/2B1K3 w - - 0 2
-	if ((pieceOn(SQ_B2) == W_PAWN && pieceOn(SQ_D2) == W_PAWN && pieceOn(SQ_C1) != W_BISHOP)
-		|| (pieceOn(SQ_E2) == W_PAWN && pieceOn(SQ_G2) == W_PAWN && pieceOn(SQ_F1) != W_BISHOP)
-		|| (pieceOn(SQ_B7) == B_PAWN && pieceOn(SQ_D7) == B_PAWN && pieceOn(SQ_C8) != B_BISHOP)
-		|| (pieceOn(SQ_E7) == B_PAWN && pieceOn(SQ_G7) == B_PAWN && pieceOn(SQ_F8) != B_BISHOP))
+	if ((pieceOn(SQ_B2) == W_PAWN && pieceOn(SQ_D2) == W_PAWN && pieceOn(SQ_C1) != W_BISHOP && pieceOn(SQ_C1) != NO_PIECE)
+		|| (pieceOn(SQ_E2) == W_PAWN && pieceOn(SQ_G2) == W_PAWN && pieceOn(SQ_F1) != W_BISHOP && pieceOn(SQ_F1) != NO_PIECE)
+		|| (pieceOn(SQ_B7) == B_PAWN && pieceOn(SQ_D7) == B_PAWN && pieceOn(SQ_C8) != B_BISHOP && pieceOn(SQ_C8) != NO_PIECE)
+		|| (pieceOn(SQ_E7) == B_PAWN && pieceOn(SQ_G7) == B_PAWN && pieceOn(SQ_F8) != B_BISHOP && pieceOn(SQ_F8) != NO_PIECE))
 		return false;
 
 	return true;
