@@ -75,8 +75,18 @@ void Runner::posEstimate(int argc, char* argv[])
 	lp.setup(argc, argv, nthreads);
 
 	const int64_t RUNS = 1'000'000'000'000'000;
-	const ESampleType sampleType = ESampleType::RESTRICTED;				//Choose which type of sampling to run
-	const double totalPossibilities = (sampleType == ESampleType::PIECES ? lp.combsSum :
+	const ESampleType sampleType = ESampleType::PIECES_WB;				//Choose which type of sampling to run
+	cout << endl << "Running ";
+	if (sampleType == ESampleType::PIECES)
+		cout << "PIECES: estimating legal positions from a general case. Slow, used to validate PIECES_WB " << endl;
+	else if (sampleType == ESampleType::PIECES_WB)
+		cout << "PIECES_WB: estimating legal positions without underpromotions and with at most 3 queens per side from the restricted search space " << endl;
+	else if (sampleType == ESampleType::WB_RESTRICTED)
+		cout << "WB_RESTRICTED: estimating legal positions without underpromotions and with at most 3 queens per side from the search space with white and black pieces chosen separately. Slow, used to validate RESTRICTED" << endl;
+	else if (sampleType == ESampleType::RESTRICTED)
+			cout << "RESTRICTED: estimating legal positions without underpromotions and with at most 3 queens per side" << endl;
+		
+		const double totalPossibilities = (sampleType == ESampleType::PIECES ? lp.combsSum :
 		(sampleType == ESampleType::PIECES_WB || sampleType == ESampleType::WB_RESTRICTED) ? lp.combsSumWB : lp.combsSumRestricted) * 2.0 * lp.KING_COMBINATIONS;	//* 2 because WTM and BTM
 
 	vector<int64_t> legal(nthreads, 0), legalRestricted(nthreads, 0), all(nthreads, 0);
@@ -151,12 +161,13 @@ void Runner::posEstimate(int argc, char* argv[])
 					auto totalGoodRestricted = vectorSum(legalRestricted);
 					auto totalAny = vectorSum(all);
 					std::chrono::duration<double> elapsedSeconds = std::chrono::steady_clock::now() - start;
+					cout << "Per second: " << totalAny / elapsedSeconds.count();
 					if (sampleType == ESampleType::RESTRICTED || sampleType == ESampleType::WB_RESTRICTED)
-						cout << "Per second: " << totalAny/elapsedSeconds.count() << "  legal_restricted: " << totalGoodRestricted << " / all: " << totalAny << "  estimate restricted: "
+						cout << "  legal_restricted: " << totalGoodRestricted << " / all: " << totalAny << "  estimate restricted: "
 						<< (double)totalGoodRestricted / totalAny * totalPossibilities << endl;
 
 					if (sampleType == ESampleType::PIECES_WB || sampleType == ESampleType::PIECES)
-						cout << "legal: " << totalGood << " / all: " << totalAny << "  fraction legal: "
+						cout << "  legal: " << totalGood << " / all: " << totalAny << "  fraction legal: "
 						<< (double)totalGood / totalAny << "  estimate all: " << (double)totalGood / totalAny * totalPossibilities << endl;
 					if (tnum % 8 == 0)
 					{

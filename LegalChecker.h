@@ -1,7 +1,12 @@
 #pragma once
 
 #include "position.h"
-enum class ESampleType { PIECES, PIECES_WB, WB_RESTRICTED, RESTRICTED };
+enum class ESampleType { 
+	PIECES,					//Most general case, kings in 3612 possible locations, up to 30 pieces picked 
+	PIECES_WB,				//White and black pieces picked separately
+	WB_RESTRICTED,			//White and black pieces picked separately, slowly calculates restricted case. For validation
+	RESTRICTED				//Restricted case: no underpromotions, at most 3 queens per side
+};
 
 struct LegalParams;
 

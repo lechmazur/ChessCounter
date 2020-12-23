@@ -206,12 +206,12 @@ void LegalParams::setup(int argc, char* argv[], int nthreads)
 	std::tie(combsRestricted, combsRestrictedPartialSum) = readNumbers("restricted.txt", 944774);
 
 	combsSum = std::accumulate(combs.begin(), combs.end(), 0.0, fsum);
-	cout << "Sample out of " << combsSum * 2.0 * KING_COMBINATIONS << " unique possible legal positions" << endl;
+	cout << "PIECES Sample out of " << combsSum * 2.0 * KING_COMBINATIONS << " unique possible pseudo-legal positions" << endl;
 
 	combsSumWB = std::accumulate(combsWB.begin(), combsWB.end(), 0.0, fsum);
-	cout << "Sample out of " << combsSumWB * 2.0 * KING_COMBINATIONS << " unique possible legal positions" << endl;
+	cout << "PIECES_WB, WB_RESTRICTED Sample out of " << combsSumWB * 2.0 * KING_COMBINATIONS << " unique possible pseudo-legal positions" << endl;
 
 	combsSumRestricted = std::accumulate(combsRestricted.begin(), combsRestricted.end(), 0.0, fsum);
-	cout << "Sample out of " << combsSumRestricted * 2.0 * KING_COMBINATIONS << " unique possible legal positions" << endl;
+	cout << "RESTRICTED Sample out of " << combsSumRestricted * 2.0 * KING_COMBINATIONS << " unique possible pseudo-legal positions" << endl;
 }
 
