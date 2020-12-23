@@ -752,11 +752,13 @@ void LegalChecker::makeListOfAttackers()
 		else
 			a.comeFrom = a.piece == B_QUEEN ? 0 : attacks_bb(a.pt, a.pos, posBTM.pieces()) & ~posBTM.pieces();	//Queen can't be a blocker
 
-		if (a.rank == RANK_1)
+		if (a.rank == RANK_1 && count[B_PAWN] < 8)	//Promotion by black means less than 8 black pawns
 		{
 			//Promotion possible
 			//White king's location couldn't have been attacked by that black pawn before promotion or it'd be an illegal position
-			a.comeFrom |= (shift<NORTH>(a.abit) | shift<NORTH_WEST>(a.abit) | shift<NORTH_EAST>(a.abit)) & ~posBTM.pieces() & ~PawnAttacks[WHITE][wk];
+			a.comeFrom |= shift<NORTH>(a.abit) & ~posBTM.pieces() & ~PawnAttacks[WHITE][wk];
+			if (nWhite - count[W_PAWN] < 8)	//Must have been a capture for the pawn to move diagonally and it couldn't be a pawn on rank 1
+				a.comeFrom |= (shift<NORTH_WEST>(a.abit) | shift<NORTH_EAST>(a.abit)) & ~posBTM.pieces() & ~PawnAttacks[WHITE][wk];
 		}
 
 		a.middleSquares = a.pt == PAWN ? 0 : betweenKingAndAttacker(a.pos, a.pt);
