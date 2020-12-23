@@ -118,7 +118,7 @@ void Runner::posEstimate(int argc, char* argv[])
 	lp.setup(argc, argv, nthreads);
 
 	const int64_t RUNS = 1'000'000'000'000'000;
-	const ESampleType sampleType = ESampleType::RESTRICTED;				//Choose which type of sampling to run
+	const ESampleType sampleType = ESampleType::PIECES_WB;				//Choose which type of sampling to run
 	cout << endl << "Running ";
 	if (sampleType == ESampleType::PIECES)
 		cout << "PIECES: estimating legal positions from a general case. Slow, used to validate PIECES_WB " << endl;
