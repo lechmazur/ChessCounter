@@ -80,7 +80,7 @@ void Runner::posEstimate(int argc, char* argv[])
 	if (sampleType == ESampleType::PIECES)
 		cout << "PIECES: estimating legal positions from a general case. Slow, used to validate PIECES_WB " << endl;
 	else if (sampleType == ESampleType::PIECES_WB)
-		cout << "PIECES_WB: estimating legal positions without underpromotions and with at most 3 queens per side from the restricted search space " << endl;
+		cout << "PIECES_WB: estimating legal positions when white and black pieces are chosen separately " << endl;
 	else if (sampleType == ESampleType::WB_RESTRICTED)
 		cout << "WB_RESTRICTED: estimating legal positions without underpromotions and with at most 3 queens per side from the search space with white and black pieces chosen separately. Slow, used to validate RESTRICTED" << endl;
 	else if (sampleType == ESampleType::RESTRICTED)
