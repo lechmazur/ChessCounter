@@ -228,19 +228,29 @@ bool LegalChecker::checkAdditionalConditions(bool underpromotions, int maxQueens
 
 		auto checkBishops = [&](Piece p)
 		{
-			if (count[p] == 2)
+			int found = 0;
+			std::array<int, 2> checkerboard = { -1, -1 };	//black or white board square
+			for (int n = 2; n < nTotal; n++)
 			{
-				int found = 0;
-				std::array<int, 2> checkerboard = { -1, -1 };	//black or white checkboard square
-				for (int n = 0; n < nTotal; n++)
+				if (pieces[n] == p)
 				{
-					if (pieces[n] == p)
-						checkerboard[found++] = (int(rank_of(squares[n])) + int(file_of(squares[n]))) % 2;
+					int colorSq = (int(rank_of(squares[n])) + int(file_of(squares[n]))) % 2;
+					//Catch positions such as 2N1Q3/pB1PpPp1/1P4qR/bKpprbq1/4P2B/1n1k2p1/2N2Q1n/2Qq1Rr1 w - - 0 1
+					//where if there are still pawns blocking a bishop in their starting locations then the only bishop on the corresponding 
+					//square color has to be behind these pawns. 
+					if ((p == W_BISHOP && colorSq == 0 && pieceOn(SQ_B2) == W_PAWN && pieceOn(SQ_D2) == W_PAWN && squares[n] != SQ_C1)
+						|| (p == W_BISHOP && colorSq == 1 && pieceOn(SQ_E2) == W_PAWN && pieceOn(SQ_G2) == W_PAWN && squares[n] != SQ_F1)
+						|| (p == B_BISHOP && colorSq == 1 && pieceOn(SQ_B7) == B_PAWN && pieceOn(SQ_D7) == B_PAWN && squares[n] != SQ_C8)
+						|| (p == B_BISHOP && colorSq == 0 && pieceOn(SQ_E7) == B_PAWN && pieceOn(SQ_G7) == B_PAWN && squares[n] != SQ_F8))
+						return false;
+					checkerboard[found] = colorSq;
+					found++;
 				}
-				assert(found == 2);
-				if (checkerboard[0] == checkerboard[1])	//can't get two same color square bishops without underpromotions (to minor pieces)
-					return false;
 			}
+			assert(found == count[p]);
+			if (checkerboard[0] == checkerboard[1])	//can't get two same color square bishops without underpromotions (to minor pieces)
+				return false;
+
 			return true;
 		};
 
@@ -249,6 +259,7 @@ bool LegalChecker::checkAdditionalConditions(bool underpromotions, int maxQueens
 
 		if (!okWhiteB || !okBlackB)
 			return false;
+
 	}
 	return true;
 }

@@ -55,7 +55,7 @@ public:
 	std::vector<Attacker> attackers;				//List of who checks white king (at most 2)
 
 public:
-	const std::array<int, PIECE_NB>& getCount() const;
+	[[nodiscard]] const std::array<int, PIECE_NB>& getCount() const;
 	void init(LegalParams* lpIn, int tnum);
 	template<ESampleType sampleType>
 	bool prepare();
