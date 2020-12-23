@@ -168,40 +168,6 @@ void LegalParams::setup(int argc, char* argv[], int nthreads)
 
 	kingLocDistribution = std::uniform_int_distribution<int>(0, int(whiteKingLocs.size() - 1));
 
-
-   /*
-from math import comb
-
-f = open('u:/ChessCounter/restricted.txt','w')
-c = 0
-sum  = 0
-xmax = 0
-
-for wp in range(0, 9):
-	 for bp in range(0, 9):
-		 for wn in range(0, 3):
-			 for bn in range(0, 3):
-				 for wb in range(0, 3):
-					 for bb in range(0, 3):
-						 for wr in range(0, 3):
-							 for br in range(0, 3):
-								 for wq in range(0, min(4,16-wp-wn-wb-wr)):
-									 for bq in range(0, min(4,16-bp-bn-bb-br)):
-										 c += 1
-										 x = comb(62,wp) * comb(62-wp,bp) * comb(62-wp-bp,wn) * comb(62-wp-bp-wn,bn) * comb(62-wp-bp-wn-bn,wb) * comb(62-wp-bp-wn-bn-wb,bb) * comb(62-wp-bp-wn-bn-wb-bb,wr) * comb(62-wp-bp-wn-bn-wb-bb-wr,br) * comb(62-wp-bp-wn-bn-wb-bb-wr-br,wq) * comb(62-wp-bp-wn-bn-wb-bb-wr-br-wq,bq)
-										 sum += x
-										 if (x>xmax):
-											 xmax = x
-											 print(xmax, wp,bp,wn,bn,wb,bb,wr,br,wq,bq)
-
-										 f.write(str(c)+'\n')
-										 f.write(str(float(x))+'\n')
-print(3612*2*sum, c)
-print(float(3612*2*sum))
-f.close()
-
-   */
-
 	auto fsum = [](double sum, const OneComb& c2)
 	{
 		return sum + c2.val;
@@ -223,7 +189,6 @@ f.close()
 		}
 
 		sort(res.begin(), res.end(), [](const OneComb& c1, const OneComb& c2) { return c1.val < c2.val; });
-
 		vector<double> partialSum(sz + 1);
 		double sum = 0;
 		for (int q = 0; q < sz; q++)
