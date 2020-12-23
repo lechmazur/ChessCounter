@@ -48,7 +48,7 @@ The following rules for determining if a position is legal are used (white-to-mo
 
      A. There was a double-discovered en passant move. The white king would have to be above or below the source square of the en passant capturing black pawn. It would have to be attacked through the rays crossing that source square and the square where the captured pawn was previously.
 
-     B. One of the checking pieces was blocking another currently checking piece from checking previously. This means that, for example, the checks can’t be from two rooks at once. If a piece that moved to enable the discovery check has an attacking slider piece behind it that would be checking the white king if the square was empty, that position would have been illegal (black-to-move and white king in check).
+     B. One of the checking pieces was blocking another currently checking piece from checking previously. This means that, for example, the checks can’t be from two rooks at once (but see C.). If a piece that moved to enable the discovery check has an attacking slider piece behind it that would be checking the white king if the square was empty, that position would have been illegal (black-to-move and white king in check).
 
      C. Black previously made a promotion move. The white king would have to be attacked by the promoted piece and this pawn must have been previously blocking another piece from checking.
 
