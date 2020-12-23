@@ -572,7 +572,7 @@ bool LegalChecker::checkSameFileAndCounts() const
 		for (File c = FILE_A; c <= FILE_H; ++c)
 		{
 			int pawns = 0;
-			for (Rank y = RANK_1; y <= RANK_8; ++y)
+			for (Rank y = RANK_2; y <= RANK_7; ++y)
 			{
 				auto p = pieceFR(c, y);
 				if (p == pieceCounted)
@@ -594,16 +594,42 @@ bool LegalChecker::checkSameFileAndCounts() const
 	{
 		Rank foundWhite = RANK_NB;
 		Rank foundBlack = RANK_NB;
-		for (Rank y = RANK_1; y <= RANK_8; ++y)
+		int npBlack = 0;
+
+		for (Rank y = RANK_2; y <= RANK_7; ++y)
 		{
 			auto p = pieceFR(c, y);
-			if (p == B_PAWN && foundBlack == RANK_NB)
+			if (p == B_PAWN)
+			{
 				foundBlack = y;
+				npBlack++;
+			}
 			if (p == W_PAWN)
-				foundWhite = y;
+				break;
 		}
-		if (foundWhite != RANK_NB && foundBlack != RANK_NB && foundBlack < foundWhite)
-			whiteAboveBlack++;
+
+		int npWhite = 0;
+		for (Rank y = RANK_7; y >= RANK_2; --y)
+		{
+			auto p = pieceFR(c, y);
+			if (p == W_PAWN)
+			{
+				foundWhite = y;
+				npWhite++;
+			}
+			if (p == B_PAWN)
+				break;
+		}
+
+		if (foundBlack < foundWhite && npWhite >= 1 && npBlack >= 1)
+		{
+			whiteAboveBlack += npWhite - 1 + npBlack - 1;
+		}
+	}
+
+	if (whiteAboveBlack >= 3)
+	{
+		//std::cout << fen() << std::endl;
 	}
 
 	if (nBlack + nWhite + whiteAboveBlack > 32)

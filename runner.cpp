@@ -60,7 +60,10 @@ void validate(LegalParams& lp)
 
 	vector<std::pair<std::string, bool>> fens =
 	{
-		{"8/kqrqN1P1/6Q1/1PP1KB1P/n1p1bQp1/bQn1ppN1/RBP3rp/2qR4 w - - 0 1", false}, 
+		{"rnbqkbnr/ppppp1pp/5P2/5p2/8/8/PPPPP1PP/RNBQKBNR w KQkq - 0 2", false},
+		{"rnbqkb1r/ppppp1pp/5P2/5P2/8/5p2/PPPPP2P/RNBQKBNR w KQkq - 0 2", false},
+		{"rnbqkb1r/pppppp1p/8/6P1/6p1/8/PPPPP1PP/RNBQKBNR w KQkq - 0 2", true},
+		{"8/kqrqN1P1/6Q1/1PP1KB1P/n1p1bQp1/bQn1ppN1/RBP3rp/2qR4 w - - 0 1", false},
 		{"6k1/8/4n3/1P6/P4n2/3B3R/4BB2/K7 w - - 0 8", true},
 		{"rnbqkbnr/q1q1q1q1/8/Q2Q1QQ1/8/8/1Q1Q1Q1R/RNBQKBNR w KQkq - 0 8", true},
 		{"2bqkbnr/2pppppp/8/1p6/8/3Q4/PQQPPPPP/QQ1QKBNR w Kk - 0 8", false},
@@ -79,7 +82,6 @@ void validate(LegalParams& lp)
 		assert(checkFromFen(fen, lp, false) == val);
 	}
 }
-
 
 void Runner::posEstimate(int argc, char* argv[])
 {
@@ -145,6 +147,7 @@ void Runner::posEstimate(int argc, char* argv[])
 
 			if (isok)
 			{
+				//cout << lc.fen() << endl;
 				kingSquares[(int)lc.wk][tnum]++;
 				kingSquares[(int)lc.bk][tnum]++;
 				kingIn[lc.kingInPawnSquares][tnum]++;
@@ -153,8 +156,6 @@ void Runner::posEstimate(int argc, char* argv[])
 					pieceCountsByThread[tnum][(int)p][lc.getCount()[p]]++;
 
 				bool isokRestricted = lc.checkAdditionalConditions(false, 3, 6);
-				//if (isokRestricted)
-					//cout << lc.fen() << endl;
 				int countAs = lc.countCastling();		//If there are castling possibilities, this position counts as multiple (2^castling_possibilties)
 				int epPoss = lc.countEnPassantPossibilities();		//En passant possibilities
 
