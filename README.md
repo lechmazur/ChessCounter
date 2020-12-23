@@ -60,11 +60,11 @@ The following rules for determining if a position is legal are used:
 
 ## Results
 
-Upper bound estimate of possible legal chess position (counts en passant, castling, sides to move, allows underpromotions): **8.59+45**
+Upper bound estimate of possible legal chess position (counts en passant, castling, sides to move, allows underpromotions): **8.59E+45**
 
 Counting by the number of pieces on the board shows that there were most legal positions with 29 pieces. The number of possible positions with 22 or fewer pieces or with a complete set of 32 pieces is negligible compared to this. In computer chess, perfect-play endgame tablesbases were so far only created up to 7 pieces (Lomonosov, Syzygy). Creating endgame tablebases for 8 pieces might be possible on one of the top supercomputers but each additional piece means a couple of magnitudes more of storage and computing power is needed.
 
-The highest estimate of "realistic" possible legal chess position (counts en passant, castling, sides to move) with at most 3 queens per side (6 total) and without underpromotions as calculated by the program: **1.01E+42**
+The highest estimate of "realistic" possible legal chess position (counts en passant, castling, sides to move) with at most 3 queens per side (6 total) and without underpromotions as calculated by the program: **1.014E+42**
 
 6 queens on the board has occurred a few times in real games, so going below this would be too limiting.
 
