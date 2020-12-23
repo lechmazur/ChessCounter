@@ -20,7 +20,7 @@ Some of the positions might have castling and en passant rights, increasing the 
 The program only looks at positions with white-to-move (and doubles the result). It counts the number of possible castling moves and en passant moves and weighs each random sample position as more than 1 when it’s needed. For example, if a position allows white short, white long, and black short castling and there are black pawns on f5 and c5 (with empty squares at f6, f7, and c6, and c7) and white pawns at g5 and b5, it will be counted at 2^3 * 3 = 24 positions. Since we might be looking at trillion+ positions, we're using a 64-bit PRNG with at least 128 bits of state (PCG or JSF work well).
 
 ## Rules
-The following rules for determining if a position is legal are used:
+The following rules for determining if a position is legal are used (white-to-move):
 
 1. No pawns on 1st or 8th rank
 
