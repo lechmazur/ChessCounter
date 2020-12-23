@@ -36,17 +36,15 @@ The following rules for determining if a position is legal are used (white-to-mo
 
 7. A bishop that is not in its starting position can’t be at positions unreachable because of pawns still at their starting positions. E.g. if there is a white pawn at b2, there can’t be a bishop at a1 or if there are black pawns at d7 and f7, there can’t be a bishop at e8.
 
-8. If there are still pawns initially blocking a bishop (e.g. white pawns at b2 and d2), this means that there has to a white bishop (at c1) behind them.
+8. Various pawn structures are impossible from the starting chess position, especially on the sides. For example, white pawns at a2, b2, a3, white pawns at a2, a3, c2, a4, white pawns at a3, a4, b3, c2, white pawns at b2, c2, d2, c3, etc.
 
-9. Various pawn structures are impossible from the starting chess position, especially on the sides. For example, white pawns at a2, b2, a3, white pawns at a2, a3, c2, a4, white pawns at a3, a4, b3, c2, white pawns at b2, c2, d2, c3, etc.
+9. Each extra pawn on the same file means the opposite-side piece was captured. E.g. if there are white pawns at d2, d4, and d6, it means that at least two black pieces were captured.
 
-10. Each extra pawn on the same file means the opposite-side piece was captured. E.g. if there are white pawns at d2, d4, and d6, it means that at least two black pieces were captured.
+10. If the black king is in check when it’s white-to-move then the position is illegal.
 
-11. If the black king is in check when it’s white-to-move then the position is illegal.
+11. If the white king is in check by three or more attackers, the position is illegal.
 
-12. If the white king is in check by three or more attackers, the position is illegal.
-
-13. A position in which the white king is checked by two black attackers is legal only under certain circumstances:
+12. A position in which the white king is checked by two black attackers is legal only under certain circumstances:
 
      A. There was a double-discovered en passant move. The white king would have to be above or below the source square of the en passant capturing black pawn. It would have to be attacked through the rays crossing that source square and the square where the captured pawn was previously.
 
@@ -54,7 +52,7 @@ The following rules for determining if a position is legal are used (white-to-mo
 
      C. Black previously made a promotion move. The white king would have to be attacked by the promoted piece and this pawn must have been previously blocking another piece from checking.
 
-14. A position in which the white king is checked by one black attacker is illegal if the checking piece has no place to come from because it would have been checking the white king at all possible source locations before it moved (or is just completely blocked off). This rule has to consider that castling could result in a check and that a black piece on the 1st rank could have captured or moved like a pawn (e.g. a rook at d1 could have come from e2) because it could have been promoted. We only look at checks when the piece is checking "directly" (when it's a knight or a pawn or when there are no squares between the white king and the black pieces). A pawn that hasn’t moved from the starting location can’t be checking (e.g. black pawn at e7).
+13. A position in which the white king is checked by one black attacker is illegal if the checking piece has no place to come from because it would have been checking the white king at all possible source locations before it moved (or is just completely blocked off). This rule has to consider that castling could result in a check and that a black piece on the 1st rank could have captured or moved like a pawn (e.g. a rook at d1 could have come from e2) because it could have been promoted. We only look at checks when the piece is checking "directly" (when it's a knight or a pawn or when there are no squares between the white king and the black pieces). A pawn that hasn’t moved from the starting location can’t be checking (e.g. black pawn at e7).
 
 
 ## Results
