@@ -52,16 +52,16 @@ The following rules for determining if a position is legal are used (white-to-mo
 
      C. Black previously made a promotion move. The white king would have to be attacked by the promoted piece and this pawn must have been previously blocking another piece from checking.
 
-13. A position in which the white king is checked by one black attacker is illegal if the checking piece has no place to come from because it would have been checking the white king at all possible source locations before it moved (or is just completely blocked off). This rule has to consider that castling could result in a check and that a black piece on the 1st rank could have captured or moved like a pawn (e.g. a rook at d1 could have come from e2) because it could have been promoted. We only look at checks when the piece is checking "directly" (when it's a knight or a pawn or when there are no squares between the white king and the black pieces). A pawn that hasn’t moved from the starting location can’t be checking (e.g. black pawn at e7).
+13. A position in which the white king is checked by one black attacker is illegal if the checking piece has no place to come from because it would have been checking the white king at all possible source locations before it moved (or is just completely blocked off). This rule has to consider that castling could result in a check and that a black piece on the 1st rank could have captured or moved like a pawn (e.g. a rook at d1 could have come from e2) because it could have been promoted. We only look at checks when the piece is checking "directly" (when it's a knight or a pawn or when there are no squares between the white king and the black piece). A pawn that hasn’t moved from the starting location can’t be checking (e.g. black pawn at e7).
 
 
 ## Results
 
-Upper bound estimate of possible legal chess position (counts en passant, castling, sides to move, allows underpromotions): **8.59E+45**
+Upper bound estimate of possible legal chess position (counts en passant, castling, sides to move, allows underpromotions): **8.6E+45**
 
 Counting by the number of pieces on the board shows that there were most legal positions with 29 pieces. The number of possible positions with 22 or fewer pieces or with a complete set of 32 pieces is negligible compared to this. In computer chess, perfect-play endgame tablesbases were so far only created up to 7 pieces (Lomonosov, Syzygy). Creating endgame tablebases for 8 pieces might be possible on one of the top supercomputers but each additional piece means a couple of magnitudes more of storage and computing power is needed.
 
-The highest estimate of "realistic" possible legal chess position (counts en passant, castling, sides to move) with at most 3 queens per side (6 total) and without underpromotions as calculated by the program: **1.014E+42**
+The highest estimate of "realistic" possible legal chess position (counts en passant, castling, sides to move) with at most 3 queens per side (6 total) and without underpromotions as calculated by the program: **1.02E+42**
 
 6 queens on the board has occurred a few times in real games, so going below this would be too limiting.
 
