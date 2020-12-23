@@ -40,11 +40,13 @@ The following rules for determining if a position is legal are used (white-to-mo
 
 9. Each extra pawn on the same file means the opposite-side piece was captured. E.g. if there are white pawns at d2, d4, and d6, it means that at least two black pieces or pawns were captured.
 
-10. If the black king is in check when it’s white-to-move then the position is illegal.
+10. If the white pawn is on the same file as the black pawn and it's above it, this means that there was a capture. E.g. white pawn at c7 and a black pawn at c4.
 
-11. If the white king is in check by three or more attackers, the position is illegal.
+11. If the black king is in check when it’s white-to-move then the position is illegal.
 
-12. A position in which the white king is checked by two black attackers is legal only under certain circumstances:
+12. If the white king is in check by three or more attackers, the position is illegal.
+
+13. A position in which the white king is checked by two black attackers is legal only under certain circumstances:
 
      A. There was a double-discovered en passant move. The white king would have to be above or below the source square of the en passant capturing black pawn. It would have to be attacked through the rays crossing that source square and the square where the captured pawn was previously.
 
@@ -52,11 +54,11 @@ The following rules for determining if a position is legal are used (white-to-mo
 
      C. Black previously made a promotion move. The white king would have to be attacked by the promoted piece and this pawn must have been previously blocking another piece from checking.
 
-13. A position in which the white king is checked by one black attacker is illegal if the checking piece has no place to come from because it would have been checking the white king at all possible source locations before it moved (or is just completely blocked off). This rule has to consider that castling could result in a check and that a black piece on the 1st rank could have captured or moved like a pawn (e.g. a rook at d1 could have come from e2) because it could have been promoted. We only look at checks when the piece is checking "directly" (when it's a knight or a pawn or when there are no squares between the white king and the black piece). 
+14. A position in which the white king is checked by one black attacker is illegal if the checking piece has no place to come from because it would have been checking the white king at all possible source locations before it moved (or is just completely blocked off). This rule has to consider that castling could result in a check and that a black piece on the 1st rank could have captured or moved like a pawn (e.g. a rook at d1 could have come from e2) because it could have been promoted. We only look at checks when the piece is checking "directly" (when it's a knight or a pawn or when there are no squares between the white king and the black piece). 
 
-14. A pawn that hasn’t moved from the starting location can’t be checking (e.g. the black pawn at e7).
+15. A pawn that hasn’t moved from the starting location can’t be checking (e.g. the black pawn at e7).
 
-15. (Restricted case only) If there are still pawns in their starting locations blocking a bishop then the only bishop on the corresponding square color has to be behind these pawns. E.g. if there are white pawns at e2 and g2, a bishop that moves over white squares can only be at f1.
+16. (Restricted case only) If there are still pawns in their starting locations blocking a bishop then the only bishop on the corresponding square color has to be behind these pawns. E.g. if there are white pawns at e2 and g2, a bishop that moves over white squares can only be at f1.
 
 
 ## Results
