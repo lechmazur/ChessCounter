@@ -8,12 +8,13 @@
 #include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
-
-
+#include "OpeningLimit.h"
 
 
 class Runner
 {
+private:
+	std::vector<OpeningLimit> openingsToCheck;
 
 public:
 	void init();

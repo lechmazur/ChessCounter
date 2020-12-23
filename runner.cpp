@@ -18,6 +18,30 @@ void init();
 void Runner::init()
 {
 	cout << engine_info() << endl;
+	//rnbqkb1r/1p2pppp/p2p1n2/8/3NP3/2N5/PPP2PPP/R1BQKB1R w KQkq - 0 6
+	openingsToCheck.emplace_back(OpeningLimit("Najdorf", { SQ_D2, SQ_E2 }, { SQ_A7, SQ_C7, SQ_D7 }, 1, 1));
+	//rnbqkb1r/1p3ppp/p2p1n2/4p3/3NP3/2N1B3/PPP2PPP/R2QKB1R w KQkq - 0 7
+	openingsToCheck.emplace_back(OpeningLimit("Najdorf English Attack", { SQ_D2, SQ_E2 }, { SQ_A7, SQ_C7, SQ_D7, SQ_E7 }, 1, 1));
+	//rnbqkb1r/pppp1ppp/4pn2/8/2PP4/8/PP2PPPP/RNBQKBNR w KQkq - 0 3
+	openingsToCheck.emplace_back(OpeningLimit("Indian Game Normal Variation", { SQ_C2, SQ_D2 }, { SQ_E7 }, 0, 0));
+	//rnbqkb1r/p1pp1ppp/1p2pn2/8/2PP4/5N2/PP2PPPP/RNBQKB1R w KQkq - 0 4
+	openingsToCheck.emplace_back(OpeningLimit("Queen's Indian Defense", { SQ_C2, SQ_D2 }, { SQ_E7, SQ_B7 }, 0, 0));
+	//rnbqkb1r/ppp2ppp/4pn2/3p4/2PP4/5N2/PP2PPPP/RNBQKB1R w KQkq - 0 4
+	openingsToCheck.emplace_back(OpeningLimit("Indian Grünfeld Defense", { SQ_C2, SQ_D2 }, { SQ_D7, SQ_E7 }, 0, 0));
+	//rnbqkbnr/ppp1pppp/8/3p4/2PP4/8/PP2PPPP/RNBQKBNR b KQkq - 0 2
+	openingsToCheck.emplace_back(OpeningLimit("Queen's Gambit", { SQ_C2, SQ_D2 }, { SQ_D7 }, 0, 0));
+	//rnbqkbnr/pp2pppp/2p5/3p4/2PP4/8/PP2PPPP/RNBQKBNR w KQkq - 0 3
+	openingsToCheck.emplace_back(OpeningLimit("Slav Defense", { SQ_C2, SQ_D2 }, { SQ_D7, SQ_C7 }, 0, 0));
+	//rnbqkb1r/ppp2ppp/5n2/3p4/3P4/2N5/PP2PPPP/R1BQKBNR w KQkq - 0 5
+	openingsToCheck.emplace_back(OpeningLimit("Queen's Gambit Declined Exchange Variation", { SQ_C2, SQ_D2 }, { SQ_D7, SQ_E7 }, 1, 1));
+	//r1bqk2r/1pppbppp/p1n2n2/4p3/B3P3/5N2/PPPP1PPP/RNBQ1RK1 w kq - 4 6
+	openingsToCheck.emplace_back(OpeningLimit("Ruy Lopez: Closed", { SQ_E2 }, { SQ_A7, SQ_E7 }, 0, 0));
+	//r1bq1rk1/2p1bppp/p1np1n2/1p2p3/4P3/1BP2N1P/PP1P1PP1/RNBQR1K1 b - - 0 9
+	openingsToCheck.emplace_back(OpeningLimit("Ruy Lopez: Closed Main Line", { SQ_E2, SQ_C2, SQ_H2 }, { SQ_A7, SQ_B7, SQ_D7, SQ_E7 }, 0, 0));
+	//rnbq1rk1/ppp2pbp/3p1np1/4p3/2PPP3/2N2N2/PP2BPPP/R1BQK2R w KQ - 0 7
+	openingsToCheck.emplace_back(OpeningLimit("King's Indian Defense: Orthodox Variation", { SQ_E2, SQ_D2, SQ_E2, SQ_D3 }, { SQ_D7, SQ_E7}, 0, 0));
+	//rnbqkb1r/ppp2ppp/3p4/8/4n3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 5
+	openingsToCheck.emplace_back(OpeningLimit("Russian Game", { SQ_E2 }, { SQ_D7, SQ_E7 }, 1, 1));
 }
 
 
@@ -94,7 +118,7 @@ void Runner::posEstimate(int argc, char* argv[])
 	lp.setup(argc, argv, nthreads);
 
 	const int64_t RUNS = 1'000'000'000'000'000;
-	const ESampleType sampleType = ESampleType::PIECES_WB;				//Choose which type of sampling to run
+	const ESampleType sampleType = ESampleType::RESTRICTED;				//Choose which type of sampling to run
 	cout << endl << "Running ";
 	if (sampleType == ESampleType::PIECES)
 		cout << "PIECES: estimating legal positions from a general case. Slow, used to validate PIECES_WB " << endl;
@@ -110,6 +134,9 @@ void Runner::posEstimate(int argc, char* argv[])
 
 	vector<int64_t> legal(nthreads, 0), legalRestricted(nthreads, 0), all(nthreads, 0);
 	vector<vector<int64_t>> byCount(nthreads), byCountRestricted(nthreads);
+	vector<vector<int64_t>> legalOpeningsCount(openingsToCheck.size());
+	for (auto& lo : legalOpeningsCount)
+		lo.resize(nthreads, 0);
 	for (auto& b : byCount)
 		b.resize(33, 0);
 	for (auto& b : byCountRestricted)
@@ -150,15 +177,14 @@ void Runner::posEstimate(int argc, char* argv[])
 
 			if (isok)
 			{
-				//cout << lc.fen() << endl;
-				kingSquares[(int)lc.wk][tnum]++;
-				kingSquares[(int)lc.bk][tnum]++;
-				kingIn[lc.kingInPawnSquares][tnum]++;
+				auto [wk, bk] = lc.getKings();
+				kingSquares[(int)wk][tnum]++;
+				kingSquares[(int)bk][tnum]++;
+				kingIn[lc.getKingInPawnSquares()][tnum]++;
 
 				for (Piece p = W_PAWN; p <= B_KING; ++p)
 					pieceCountsByThread[tnum][(int)p][lc.getCount()[p]]++;
 
-				bool isokRestricted = lc.checkAdditionalConditions(false, 3, 6);
 				int countAs = lc.countCastling();		//If there are castling possibilities, this position counts as multiple (2^castling_possibilties)
 				int epPoss = lc.countEnPassantPossibilities();		//En passant possibilities
 
@@ -166,6 +192,16 @@ void Runner::posEstimate(int argc, char* argv[])
 				legal[tnum] += countAs;
 				byCount[tnum][lc.totalPieces()] += countAs;
 
+				int c = 0;
+				for (const auto& open : openingsToCheck)
+				{
+					auto allowOpening = lc.checkOpening(open);
+					if (allowOpening)
+						legalOpeningsCount[c][tnum]++;
+					c++;
+				}
+
+				bool isokRestricted = lc.checkAdditionalConditions(false, 3, 6);
 				if (isokRestricted)
 				{
 					legalRestricted[tnum] += countAs;
@@ -238,6 +274,15 @@ void Runner::posEstimate(int argc, char* argv[])
 								cout << s << endl;
 							}
 						}
+
+						int c = 0;
+						for (const auto& open : openingsToCheck)
+						{
+							auto numLegal = vectorSum(legalOpeningsCount[c]);
+							cout << open.name << ":  legal = " << numLegal << "  estimate = " << (double)numLegal / totalAny * totalPossibilities << endl;
+							c++;
+						}
+
 					}
 				}
 			}

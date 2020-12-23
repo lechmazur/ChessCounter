@@ -1,6 +1,8 @@
 #pragma once
 
 #include "position.h"
+#include "OpeningLimit.h"
+
 enum class ESampleType { 
 	PIECES,					//Most general case, kings in 3612 possible locations, up to 30 pieces picked 
 	PIECES_WB,				//White and black pieces picked separately
@@ -30,7 +32,7 @@ struct Attacker
 
 class LegalChecker
 {
-public:
+private:
 	std::array<Square, 32> squares;	//Piece locations (including empty)
 	std::array<Piece, 32> pieces;		//What pieces are there
 	Square wk = SQUARE_NB;				//White king location
@@ -55,6 +57,8 @@ public:
 	std::vector<Attacker> attackers;				//List of who checks white king (at most 2)
 
 public:
+	[[nodiscard]] int getKingInPawnSquares() const;
+	[[nodiscard]] std::pair<Square, Square> getKings() const;
 	[[nodiscard]] const std::array<int, PIECE_NB>& getCount() const;
 	void init(LegalParams* lpIn, int tnum);
 	template<ESampleType sampleType>
@@ -88,5 +92,6 @@ public:
 	[[nodiscard]] std::string fen() const;
 	[[nodiscard]] bool isSanityCheck() const;
 	[[nodiscard]] bool isSanityCheck2() const;
+	[[nodiscard]] bool checkOpening(const OpeningLimit& ol) const;
 };
 

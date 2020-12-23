@@ -96,6 +96,9 @@
     <ClCompile Include="sf\nnue\features\half_kp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="OpeningLimit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LegalChecker.h">
@@ -201,6 +204,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sf\incbin\incbin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpeningLimit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

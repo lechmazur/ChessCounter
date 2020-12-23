@@ -164,6 +164,7 @@
     <ClCompile Include="chessCounter.cpp" />
     <ClCompile Include="LegalChecker.cpp" />
     <ClCompile Include="LegalParams.cpp" />
+    <ClCompile Include="OpeningLimit.cpp" />
     <ClCompile Include="runner.cpp" />
     <ClCompile Include="sf\benchmark.cpp" />
     <ClCompile Include="sf\bitbase.cpp" />
@@ -192,6 +193,7 @@
   <ItemGroup>
     <ClInclude Include="LegalChecker.h" />
     <ClInclude Include="LegalParams.h" />
+    <ClInclude Include="OpeningLimit.h" />
     <ClInclude Include="runner.h" />
     <ClInclude Include="sf\bitboard.h" />
     <ClInclude Include="sf\endgame.h" />

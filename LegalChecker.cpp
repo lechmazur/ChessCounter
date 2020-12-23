@@ -19,6 +19,16 @@ template <typename T> int sgn(T val) {
 }
 
 
+int LegalChecker::getKingInPawnSquares() const
+{
+	return kingInPawnSquares;
+}
+
+std::pair<Square, Square> LegalChecker::getKings() const
+{
+	return std::make_pair(wk, bk);
+}
+
 const std::array<int, PIECE_NB>& LegalChecker::getCount() const
 {
 	return count;
@@ -1009,6 +1019,22 @@ bool LegalChecker::isSanityCheck() const
 bool LegalChecker::isSanityCheck2() const
 {
 	return checkBySide();
+}
+
+bool LegalChecker::checkOpening(const OpeningLimit& ol) const
+{
+	if (nWhite + ol.missingWhite > 16 || nBlack + ol.missingBlack > 16)
+		return false;
+
+	for (const Square& noWhiteP : ol.noPawnsLocationsWhite)
+		if (pieceOn(noWhiteP) == W_PAWN)
+			return false;
+
+	for (const Square& noBlackP : ol.noPawnsLocationsBlack)
+		if (pieceOn(noBlackP) == B_PAWN)
+			return false;
+
+	return true;
 }
 
 //underpromotions. Is promotion to minor pieces allowed
