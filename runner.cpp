@@ -60,6 +60,9 @@ void validate(LegalParams& lp)
 
 	vector<std::pair<std::string, bool>> fens =
 	{
+		{"rnbqkb1r/ppppppp1/8/7P/7p/8/PPPPPP1P/RNBQKBNR w KQkq - 0 2", true},
+		{"rnbqkbnr/ppppppp1/8/7P/7p/8/PPPPPPP1/RNBQKBNR w KQkq - 0 2", false},
+		{"rnbqkbnr/pppppp2/7P/7P/7p/8/PPPPPP2/RNBQKBNR w KQkq - 0 2", false},
 		{"rnbqkbnr/ppppp1pp/5P2/5p2/8/8/PPPPP1PP/RNBQKBNR w KQkq - 0 2", false},
 		{"rnbqkb1r/ppppp1pp/5P2/5P2/8/5p2/PPPPP2P/RNBQKBNR w KQkq - 0 2", false},
 		{"rnbqkb1r/pppppp1p/8/6P1/6p1/8/PPPPP1PP/RNBQKBNR w KQkq - 0 2", true},

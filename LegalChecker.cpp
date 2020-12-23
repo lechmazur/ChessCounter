@@ -566,73 +566,72 @@ bool LegalChecker::checkSameFileAndCounts() const
 {
 	//Each extra additional pawn on the same file means the opposite-side piece was captured
 	//7k/8/8/2P3P1/2P5/6P1/6P1/4K3 w - - 0 2
-	auto countSameFilePawns = [this](Piece pieceCounted)
+	auto countSameFilePawns = [this](Piece pieceCounted, File c)
 	{
-		int sameCol = 0;
-		for (File c = FILE_A; c <= FILE_H; ++c)
+		int pawns = 0;
+		for (Rank y = RANK_2; y <= RANK_7; ++y)
 		{
-			int pawns = 0;
-			for (Rank y = RANK_2; y <= RANK_7; ++y)
-			{
-				auto p = pieceFR(c, y);
-				if (p == pieceCounted)
-					pawns++;
-			}
-			sameCol += std::max(0, pawns - 1);
+			auto p = pieceFR(c, y);
+			if (p == pieceCounted)
+				pawns++;
 		}
-		return sameCol;
+		return std::max(pawns-1, 0);
 	};
 
-	int sameColW = countSameFilePawns(W_PAWN);
-	int sameColB = countSameFilePawns(B_PAWN);
-	if (nBlack + sameColW > 16 || nWhite + sameColB > 16)
-		return false;
-
-
-	int whiteAboveBlack = 0;
-	for (File c = FILE_A; c <= FILE_H; ++c)
+	auto countBlackBelowWhite = [this](File c)
 	{
-		Rank foundWhite = RANK_NB;
-		Rank foundBlack = RANK_NB;
 		int npBlack = 0;
 
 		for (Rank y = RANK_2; y <= RANK_7; ++y)
 		{
 			auto p = pieceFR(c, y);
 			if (p == B_PAWN)
-			{
-				foundBlack = y;
 				npBlack++;
-			}
+
 			if (p == W_PAWN)
 				break;
 		}
+		return npBlack;
+	};
 
+	auto countWhiteAboveBlack = [this](File c)
+	{
 		int npWhite = 0;
 		for (Rank y = RANK_7; y >= RANK_2; --y)
 		{
 			auto p = pieceFR(c, y);
 			if (p == W_PAWN)
-			{
-				foundWhite = y;
 				npWhite++;
-			}
 			if (p == B_PAWN)
 				break;
 		}
+		return npWhite;
+	};
 
-		if (foundBlack < foundWhite && npWhite >= 1 && npBlack >= 1)
-		{
-			whiteAboveBlack += npWhite - 1 + npBlack - 1;
-		}
-	}
-
-	if (whiteAboveBlack >= 3)
+	int sameColW = 0;
+	int sameColB = 0;
+	int fileChangers = 0;
+	for (File c = FILE_A; c <= FILE_H; ++c)
 	{
-		//std::cout << fen() << std::endl;
+		int scw = countSameFilePawns(W_PAWN, c);
+		int scb = countSameFilePawns(B_PAWN, c);
+		sameColW += scw;
+		sameColB += scb;
+		int sameColFile = scw + scb;
+		int changersHere = sameColFile;
+
+		auto belowBlack = countBlackBelowWhite(c);
+		auto aboveWhite = countWhiteAboveBlack(c);
+
+		if (aboveWhite >= 1 && belowBlack >= 1)
+			changersHere = std::max(changersHere, std::max(aboveWhite, belowBlack));
+		fileChangers += changersHere;
 	}
 
-	if (nBlack + nWhite + whiteAboveBlack > 32)
+	if (nBlack + sameColW > 16 || nWhite + sameColB > 16)
+		return false;
+
+	if (nTotal + fileChangers > 32)
 		return false;
 
 	return true;
