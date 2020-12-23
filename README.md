@@ -71,4 +71,4 @@ If we were to create computer endgame tablebases, we could reduce the number of 
 
 This program uses Stockfish for fast bitboard-based computation (https://github.com/official-stockfish/Stockfish, GPL-3.0, license included) and it is also released under GPL-3.0. It's written in C++20 with OpenMP for multithreading and uses Python to generate tables with the number of combinations.
 
-The calculations don’t consider the 50-move rule or repetitions. An argument can be made that a position differs from another with an identical-looking board depending on these previous states (when a pawn was moved or a capture made or which positions were already present in the game).
+The calculations don’t consider the 50-move rule or repetitions. An argument can be made that one position differs from another with an identical-looking board depending on these previous states (when a pawn was moved or a capture made or which positions were already present in the game).
