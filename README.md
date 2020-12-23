@@ -67,7 +67,7 @@ The highest estimate of "realistic" possible legal chess position (counts en pas
 
 6 queens on the board has occurred a few times in real games, so going below this would be too limiting.
 
-If we were to create computer endgame tablebases, we could reduce the number of positions to be considered. For example, for positions in which there are no pawns, there are horizontal, vertical, and diagonal symmetries. 
+If we were to create computer endgame tablebases, we could reduce the number of positions to be considered. For example, for positions with no pawns, there are horizontal, vertical, and diagonal symmetries. 
 
 ## Notes
 
