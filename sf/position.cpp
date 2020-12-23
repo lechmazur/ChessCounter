@@ -150,15 +150,15 @@ void Position::init() {
   assert(count == 3668);
 }
 
-template<int n>
-Position& Position::setMine(const std::array<Piece, n>& pieces, const std::array<Square, n>& positions, Square epSquare, StateInfo* si, Thread* th, Color sideToMoveIn)
+template<std::size_t n>
+Position& Position::setMine(int ntotal, const std::array<Piece, n>& pieces, const std::array<Square, n>& positions, Square epSquare, StateInfo* si, Thread* th, Color sideToMoveIn)
 {
    st = si;
 
-   for (int x=0; x<n; x++)
+   for (int x=0; x<ntotal; x++)
    {
-      if (pieces[x] != NO_PIECE)
-         put_piece(pieces[x], positions[x]);
+      assert(pieces[x] != NO_PIECE);
+      put_piece(pieces[x], positions[x]);
    }
 
    sideToMove = sideToMoveIn;
@@ -178,9 +178,9 @@ Position& Position::setMine(const std::array<Piece, n>& pieces, const std::array
 }
 
 
-template Position& Position::setMine(const std::array<Piece, 7>& pieces, const std::array<Square, 7>& positions, Square epSquare, StateInfo* si, Thread* th, Color sideToMoveIn);
+template Position& Position::setMine(int ntotal, const std::array<Piece, 7>& pieces, const std::array<Square, 7>& positions, Square epSquare, StateInfo* si, Thread* th, Color sideToMoveIn);
 
-template Position& Position::setMine(const std::array<Piece, 32>& pieces, const std::array<Square, 32>& positions, Square epSquare, StateInfo* si, Thread* th, Color sideToMoveIn);
+template Position& Position::setMine(int ntotal, const std::array<Piece, 32>& pieces, const std::array<Square, 32>& positions, Square epSquare, StateInfo* si, Thread* th, Color sideToMoveIn);
 
 
 /// Position::set() initializes the position object with the given FEN string.

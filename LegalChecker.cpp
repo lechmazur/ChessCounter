@@ -19,86 +19,208 @@ template <typename T> int sgn(T val) {
 }
 
 
-//Create random board
-void LegalChecker::prepare(LegalParams* lpIn, int tnum)
+const std::array<int, PIECE_NB>& LegalChecker::getCount() const
 {
+	return count;
+}
+
+void LegalChecker::init(LegalParams* lpIn, int tnum)
+{
+	maxcount[W_PAWN] = 8;
+	maxcount[W_KNIGHT] = 2;
+	maxcount[W_BISHOP] = 2;
+	maxcount[W_ROOK] = 2;
+	maxcount[W_QUEEN] = 3;
+	maxcount[B_PAWN] = 8;
+	maxcount[B_KNIGHT] = 2;
+	maxcount[B_BISHOP] = 2;
+	maxcount[B_ROOK] = 2;
+	maxcount[B_QUEEN] = 3;
 	lp = lpIn;
 	threadNum = tnum;
-	//Kings are put into random locations where they are on neighboring squares
-	int l1 = lp->intRand(0, int(lp->whiteKingLocs.size() - 1));
-	wk = lp->whiteKingLocs[l1];
-	wkFile = file_of(wk);
-	wkRank = rank_of(wk);
-	wkBit = (uint64_t)1 << wk;
-	bk = lp->blackKingLocs[l1];
+}
+
+//Create random board
+template<ESampleType sampleType>
+bool LegalChecker::prepare()
+{
+	resetArr(count);
+
+	int n = 2;
+	auto addOne = [&](Piece p, int ncount)
+	{
+		count[p] = ncount;
+		for (int x = 0; x < ncount; x++)
+		{
+			pieces[n] = p;
+			n++;
+		}
+	};
+
+	if (sampleType == ESampleType::RESTRICTED)
+	{
+		auto [wp, bp, wn, bn, wb, bb, wr, br, wq, bq] = lp->drawNumRestricted(kingInPawnSquares);
+		nTotal = wp + bp + wn + bn + wb + bb + wr + br + wq + bq + 2;
+		assert(wp + bp <= 16 && wn + bn <= 4 && wb + bb <= 4 && wr + br <= 4 && wq + bq <= 6);
+		assert(nTotal <= 32);
+
+		addOne(W_PAWN, wp);
+		addOne(B_PAWN, bp);
+		addOne(W_QUEEN, wq);
+		addOne(B_QUEEN, bq);
+		addOne(W_KNIGHT, wn);
+		addOne(B_KNIGHT, bn);
+		addOne(W_BISHOP, wb);
+		addOne(B_BISHOP, bb);
+		addOne(W_ROOK, wr);
+		addOne(B_ROOK, br);
+	}
+	else if (sampleType == ESampleType::PIECES_WB || sampleType == ESampleType::WB_RESTRICTED)
+	{
+		auto [wPieces, bPieces] = lp->drawNumOfWBPieces();
+		nTotal = wPieces + bPieces + 2;
+		assert(nTotal <= 32);
+		for (int x = 0; x < wPieces; x++)
+		{
+			auto p = lp->pickWPiece(threadNum);
+			count[p]++;
+			//No need to continue if we know that it won't be restricted
+			if (sampleType == ESampleType::WB_RESTRICTED && count[p] > maxcount[p])
+				return false;
+			pieces[n++] = p;
+		}
+
+		for (int x = 0; x < bPieces; x++)
+		{
+			auto p = lp->pickBPiece(threadNum);;
+			count[p]++;
+			//No need to continue if we know that it won't be restricted
+			if (sampleType == ESampleType::WB_RESTRICTED && count[p] > maxcount[p])
+				return false;
+			pieces[n++] = p;
+		}
+	}
+	else
+	{
+		nTotal = lp->drawNumOfPieces() + 2;
+		//Choose a random piece for each square for the 30 chosen random locations (can be empty)
+		for (int n = 2; n < nTotal; n++)
+		{
+			auto p = lp->pickPiece(threadNum);
+			count[p]++;
+			pieces[n] = p;
+		}
+	}
+
 	Bitboard bbAll = 0;
-	bbAll |= (uint64_t)1 << wk;
-	bbAll |= (uint64_t)1 << bk;
+	
+	auto drawLoc = [&]()
+	{
+		int rLoc = -1;
+		do
+		{
+			rLoc = lp->intRand(int(SQ_A1), int(SQ_H8), threadNum);
+		} while ((bbAll & ((uint64_t)1 << rLoc)) != 0);
+		bbAll |= (uint64_t)1 << rLoc;
+		return Square(rLoc);
+	};
+
+	//Kings are put into random locations where they are not on neighboring squares
+	int idx = lp->intRand(threadNum, lp->kingLocDistribution);
+	wk = lp->whiteKingLocs[idx];
+	bk = lp->blackKingLocs[idx];
 
 	squares[0] = wk;
 	squares[1] = bk;
 	pieces[0] = W_KING;
 	pieces[1] = B_KING;
+	setKingInfo();
 
-	//Choose a random piece for each square for the 30 chosen random locations (can be empty)
-	for (int n = 0; n < 30; n++)
+	bbAll |= (uint64_t)1 << wk;
+	bbAll |= (uint64_t)1 << bk;
+
+	for (int n = 2; n < nTotal; n++)
 	{
-		int rLoc = -1;
-		do
-		{
-			rLoc = lp->intRand(0, 63);
-		} while ((bbAll & ((uint64_t)1 << rLoc)) != 0);
-		squares[n + 2] = (Square)rLoc;
-		bbAll |= (uint64_t)1 << rLoc;
-		pieces[n + 2] = lp->chooseFrom[lp->intRand(0, 10)];
+		auto sq = drawLoc();
+		//Performance optimization - quit early if pawns on wrong squares
+		if ((pieces[n] == W_PAWN || pieces[n] == B_PAWN) && (sq < SQ_A2 || sq > SQ_H7))	
+			return false;
+		squares[n] = sq;
 	}
+	return true;
 }
 
+
+template bool LegalChecker::prepare<ESampleType::PIECES>();
+template bool LegalChecker::prepare<ESampleType::PIECES_WB>();
+template bool LegalChecker::prepare<ESampleType::WB_RESTRICTED>();
+template bool LegalChecker::prepare<ESampleType::RESTRICTED>();
+
+
+void LegalChecker::setKingInfo()
+{
+	wkFile = file_of(wk);
+	wkRank = rank_of(wk);
+	wkBit = (uint64_t)1 << wk;
+
+	kingInPawnSquares = 0;
+	if (wk >= SQ_A2 && wk <= SQ_H7)
+		kingInPawnSquares++;
+	if (bk >= SQ_A2 && bk <= SQ_H7)
+		kingInPawnSquares++;
+}
 
 //Counts of pieces by type
 void LegalChecker::createCounts()
 {
 	resetArr(count);
 
-	for (auto& p : pieces)
-		count[p]++;
+	for (int c=0; c<nTotal; c++)
+		count[pieces[c]]++;
+}
 
+
+//Total counts
+void LegalChecker::createTotalCounts()
+{
 	nWhite = 1 + count[W_PAWN] + count[W_QUEEN] + count[W_ROOK] + count[W_BISHOP] + count[W_KNIGHT];
 	nBlack = 1 + count[B_PAWN] + count[B_QUEEN] + count[B_ROOK] + count[B_BISHOP] + count[B_KNIGHT];
 }
 
 
-bool LegalChecker::checkBasics() const
+bool LegalChecker::checkBySide() const
 {
-	for (int n = 2; n < 32; n++)
+	if (nWhite > 16 || nBlack > 16)	//Can't have more than 16 pieces per side
+		return false;
+	return true;
+}
+
+bool LegalChecker::checkPawnRanks() const
+{
+	for (int n = 2; n < nTotal; n++)
 	{
 		//Can't have pawns on RANK_1 or RANK_8
 		if ((pieces[n] == W_PAWN || pieces[n] == B_PAWN) && (rank_of(squares[n]) == RANK_1 || rank_of(squares[n]) == RANK_8))
 			return false;
 	}
-
-	if (nWhite > 16 || nBlack > 16)	//Can't have more than 16 pieces per side
-		return false;
-
 	return true;
 }
 
-
-bool LegalChecker::checkAdditionalConditions() const
+bool LegalChecker::checkAdditionalConditions(bool underpromotions, int maxQueensOneSide, int maxQueensTotal) const
 {
-	if (lp->maxQueensOneSide != -1)
+	if (maxQueensOneSide != -1)
 	{
-		if (count[W_QUEEN] > lp->maxQueensOneSide || count[B_QUEEN] > lp->maxQueensOneSide)
+		if (count[W_QUEEN] > maxQueensOneSide || count[B_QUEEN] > maxQueensOneSide)
 			return false;
 	}
 
-	if (lp->maxQueensTotal != -1)
+	if (maxQueensTotal != -1)
 	{
-		if (count[W_QUEEN] + count[B_QUEEN] > lp->maxQueensTotal)
+		if (count[W_QUEEN] + count[B_QUEEN] > maxQueensTotal)
 			return false;
 	}
 
-	if (!lp->underpromotions)
+	if (!underpromotions)
 	{
 		if (count[W_BISHOP] > 2 || count[W_KNIGHT] > 2 || count[W_ROOK] > 2
 			|| count[B_BISHOP] > 2 || count[B_KNIGHT] > 2 || count[B_ROOK] > 2)
@@ -110,7 +232,7 @@ bool LegalChecker::checkAdditionalConditions() const
 			{
 				int found = 0;
 				std::array<int, 2> checkerboard = { -1, -1 };	//black or white checkboard square
-				for (int n = 0; n < 32; n++)
+				for (int n = 0; n < nTotal; n++)
 				{
 					if (pieces[n] == p)
 						checkerboard[found++] = (int(rank_of(squares[n])) + int(file_of(squares[n]))) % 2;
@@ -143,7 +265,7 @@ bool LegalChecker::checkCounts() const
 
 	std::array<int, 2> checkerboardWhite = { 0, 0 };	//black or white checkboard square
 	std::array<int, 2> checkerboardBlack = { 0, 0 };	//black or white checkboard square
-	for (int n = 0; n < 32; n++)
+	for (int n = 0; n < nTotal; n++)
 	{
 		int blackOrWhite = (int(rank_of(squares[n])) + int(file_of(squares[n]))) % 2;
 		if (pieces[n] == W_BISHOP)
@@ -172,9 +294,39 @@ bool LegalChecker::checkCounts() const
 	if (count[B_PAWN] + extrasBP > 8)
 		return false;
 
-	//1 capture allows 1 white and 1 black promotion
-	int maxPromo = std::max(extrasWP, extrasBP);
-	if (maxPromo + nWhite + nBlack > 32)
+	//1 piece capture allows 1 white and 1 black promotion
+	//1 pawn capture allows 3 total promotions (2 on the capturing side, 1 on the captured side)
+	//each missing black pawn - promoted  = at most 2 white promos
+
+
+	int allowanceWP = 0;
+	int allowanceBP = 0;
+
+	int missingWhitePawns = 8 - count[W_PAWN];
+	int missingBlackPawns = 8 - count[B_PAWN];
+
+	int promoSubWhite = missingWhitePawns - extrasWP;
+	int promoSubBlack = missingBlackPawns - extrasBP;
+
+	allowanceWP += promoSubBlack * 2 + promoSubWhite;
+	allowanceBP += promoSubWhite * 2 + promoSubBlack;
+
+	int capturedWhite = 0;
+	capturedWhite += std::max(0, 2 - count[W_ROOK]);
+	capturedWhite += std::max(0, 2 - count[W_KNIGHT]);
+	capturedWhite += std::max(0, 2 - count[W_BISHOP]);
+	capturedWhite += std::max(0, 1 - count[W_QUEEN]);
+
+	int capturedBlack = 0;
+	capturedBlack += std::max(0, 2 - count[B_ROOK]);
+	capturedBlack += std::max(0, 2 - count[B_KNIGHT]);
+	capturedBlack += std::max(0, 2 - count[B_BISHOP]);
+	capturedBlack += std::max(0, 1 - count[B_QUEEN]);
+
+	allowanceWP += capturedWhite + capturedBlack;
+	allowanceBP += capturedWhite + capturedBlack;
+
+	if (extrasWP > allowanceWP || extrasBP > allowanceBP)
 		return false;
 
 	if (extrasWP >= 9 || extrasBP >= 9)
@@ -189,12 +341,12 @@ void LegalChecker::setSFPositions()
 	std::memset(&posWTM, 0, sizeof(Position));
 	std::memset(&lp->states[threadNum]->back(), 0, sizeof(StateInfo));
 
-	posWTM.setMine(pieces, squares, SQ_NONE, &lp->states[threadNum]->back(), Threads.main(), WHITE);
+	posWTM.setMine(nTotal, pieces, squares, SQ_NONE, &lp->states[threadNum]->back(), Threads.main(), WHITE);
 
 	std::memset(&posBTM, 0, sizeof(Position));
 	std::memset(&lp->states2[threadNum]->back(), 0, sizeof(StateInfo));
 
-	posBTM.setMine(pieces, squares, SQ_NONE, &lp->states2[threadNum]->back(), Threads.main(), BLACK);
+	posBTM.setMine(nTotal, pieces, squares, SQ_NONE, &lp->states2[threadNum]->back(), Threads.main(), BLACK);
 }
 
 
@@ -268,8 +420,8 @@ bool LegalChecker::checkBishops() const
 	//7k/8/8/8/8/8/1P1P4/2B1K3 w - - 0 2
 	if ((pieceOn(SQ_B2) == W_PAWN && pieceOn(SQ_D2) == W_PAWN && pieceOn(SQ_C1) != W_BISHOP)
 		|| (pieceOn(SQ_E2) == W_PAWN && pieceOn(SQ_G2) == W_PAWN && pieceOn(SQ_F1) != W_BISHOP)
-		|| (pieceOn(SQ_B7) == B_PAWN && pieceOn(SQ_D7) == B_PAWN && pieceOn(SQ_C1) != B_BISHOP)
-		|| (pieceOn(SQ_E7) == B_PAWN && pieceOn(SQ_G7) == B_PAWN && pieceOn(SQ_F1) != B_BISHOP))
+		|| (pieceOn(SQ_B7) == B_PAWN && pieceOn(SQ_D7) == B_PAWN && pieceOn(SQ_C8) != B_BISHOP)
+		|| (pieceOn(SQ_E7) == B_PAWN && pieceOn(SQ_G7) == B_PAWN && pieceOn(SQ_F8) != B_BISHOP))
 		return false;
 
 	return true;
@@ -485,7 +637,7 @@ int LegalChecker::countAttacks() const
 }
 
 
-//Did black play en-passant on the previous move? Save all possibilities
+//Did black play en passant on the previous move? Save all possibilities
 void LegalChecker::listBlackEnPassants()
 {
 	prevEPCount = 0;
@@ -618,8 +770,8 @@ bool LegalChecker::checkDoubleAttacked() const
 		//One of the checking pieces must have been blocking another from checking
 		for (int q = 0; q < 2; q++)
 		{
-			auto& attacks = attackers[1 - q];
-			auto possBlockers = (attackers[q].middleSquares & attacks.comeFrom);
+			const auto& attacks = attackers[1 - q];
+			const auto possBlockers = (attackers[q].middleSquares & attacks.comeFrom);
 			bool attackedFromBehind = false;
 
 			//If a piece that moved to enable the discovery check has an attacking slider piece behind it 
@@ -753,17 +905,76 @@ int LegalChecker::countCastling() const
 
 int LegalChecker::totalPieces() const
 {
-	return nWhite + nBlack;
+	return nTotal;
 }
 
 
+void LegalChecker::fromFen(const std::string& fen)
+{
+	std::memset(&posWTM, 0, sizeof(Position));
+	std::memset(&lp->states[threadNum]->back(), 0, sizeof(StateInfo));
+	posWTM.set(fen, false, &lp->states[threadNum]->back(), Threads.main());
+
+	for (Square sq = SQ_A1; sq <= SQ_H8; ++sq)
+	{
+		Piece p = pieceOn(sq);
+		if (p == W_KING)
+		{
+			wk = sq;
+			squares[0] = wk;
+			pieces[0] = W_KING;
+		}
+		else if (p == B_KING)
+		{
+			bk = sq;
+			squares[1] = bk;
+			pieces[1] = B_KING;
+		}
+	}
+
+	assert(wk != SQUARE_NB && bk != SQUARE_NB);
+	int loc = 2;
+
+	for (Square sq = SQ_A1; sq <= SQ_H8; ++sq)
+	{
+		Piece p = pieceOn(sq);
+		if (p != NO_PIECE && p != W_KING && p != B_KING)
+		{
+			squares[loc] = sq;
+			pieces[loc++] = p;
+		}
+	}
+
+	nTotal = loc;
+	setKingInfo();
+}
+
+
+std::string LegalChecker::fen() const
+{
+	return posWTM.fen();
+}
+
+bool LegalChecker::isSanityCheck() const
+{
+	return checkBySide() && checkPawnRanks();
+}
+
+bool LegalChecker::isSanityCheck2() const
+{
+	return checkBySide();
+}
+
+//underpromotions. Is promotion to minor pieces allowed
+//maxQueensOneSide. -1 == no max
+//maxQueensTotal. -1 == no max
 bool LegalChecker::checkConditions()
 {
-	bool isok = checkBasics();
+	bool isok = checkBySide();
 	if (!isok)
 		return false;
 
-	isok = checkAdditionalConditions();
+	isok = checkPawnRanks();
 	if (!isok)
 		return false;
 
@@ -775,7 +986,7 @@ bool LegalChecker::checkConditions()
 
 	if (posBTM.checkers())	//Black king in check = illegal position
 		return false;
-
+	
 	isok = checkBishops();
 	if (!isok)
 		return false;
@@ -787,7 +998,7 @@ bool LegalChecker::checkConditions()
 	isok = checkSameFileAndCounts();
 	if (!isok)
 		return false;
-
+		
 	nattacks = countAttacks();
 
 	if (nattacks >= 3)  //More than 3 pieces checking at once are illegal (at most 2 can result from a discovered check)
@@ -797,9 +1008,13 @@ bool LegalChecker::checkConditions()
 	makeListOfAttackers();
 
 	if (nattacks == 2)
+	{
 		isok = checkDoubleAttacked();
+	}
 	else if (nattacks == 1)
+	{
 		isok = checkSingleAttacked();
+	}
 	if (!isok)
 		return false;
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "position.h"
+enum class ESampleType { PIECES, PIECES_WB, WB_RESTRICTED, RESTRICTED };
 
 struct LegalParams;
 
@@ -24,21 +25,24 @@ struct Attacker
 
 class LegalChecker
 {
-private:
+public:
 	std::array<Square, 32> squares;	//Piece locations (including empty)
 	std::array<Piece, 32> pieces;		//What pieces are there
 	Square wk = SQUARE_NB;				//White king location
 	Square bk = SQUARE_NB;				//Black king location
 	LegalParams* lp = nullptr;
 	std::array<int, PIECE_NB> count;	//Count of each piece type
+	std::array<int, PIECE_NB> maxcount;	//Max number of each piece types for restricted case
 	Position posWTM;						//White-to-move position for SF
 	Position posBTM;						//Black-to-move position for SF
 	int threadNum = -1;					//Current thread number
+	int nTotal = -1;						//Total number of pieces
 	int nWhite = -1;						//Number of white pieces
 	int nBlack = -1;						//Number of black pieces
 	File wkFile = FILE_NB;				//White king file
 	Rank wkRank = RANK_NB;				//White king rank
 	uint64_t wkBit = 0;					//Bit where white king is
+	int kingInPawnSquares = -1;		//How many kings there are in pawn squares
 	int nattacks = -1;						//How many black pieces check white king
 	std::array<File, 14> preEnpassantsFrom;	//Black's previous possible en-passants (from)
 	std::array<File, 14> preEnpassantsTo;		//Black's previous possible en-passants (to)
@@ -46,12 +50,18 @@ private:
 	std::vector<Attacker> attackers;				//List of who checks white king (at most 2)
 
 public:
-	void prepare(LegalParams* lpIn, int tnum);
-	[[nodiscard]] bool checkBasics() const;
-	[[nodiscard]] bool checkAdditionalConditions() const;
+	const std::array<int, PIECE_NB>& getCount() const;
+	void init(LegalParams* lpIn, int tnum);
+	template<ESampleType sampleType>
+	bool prepare();
+	void setKingInfo();
+	void createCounts();
+	[[nodiscard]] bool checkBySide() const;
+	[[nodiscard]] bool checkPawnRanks() const;
+	[[nodiscard]] bool checkAdditionalConditions(bool underpromotions, int maxQueensOneSide, int maxQueensTotal) const;
 	[[nodiscard]] bool checkCounts() const;
 	[[nodiscard]] bool checkConditions();
-	void createCounts();
+	void createTotalCounts();
 	void setSFPositions();
 	[[nodiscard]] Piece pieceOn(Square sq) const;
 	[[nodiscard]] Piece pieceFR(File f, Rank r) const;
@@ -69,6 +79,9 @@ public:
 	[[nodiscard]] bool isDoubleDiscEPPossible() const;
 	[[nodiscard]] int countCastling() const;
 	[[nodiscard]] int totalPieces() const;
-
+	void fromFen(const std::string& fen);
+	[[nodiscard]] std::string fen() const;
+	[[nodiscard]] bool isSanityCheck() const;
+	[[nodiscard]] bool isSanityCheck2() const;
 };
 

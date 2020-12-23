@@ -84,8 +84,8 @@ public:
   Position& operator=(const Position&) = delete;
 
   // FEN string input/output
-  template<int n>
-  Position& setMine(const std::array<Piece, n>& pieces, const std::array<Square, n>& positions, Square epSquare, StateInfo* si, Thread* th, Color sideToMoveIn);
+  template<std::size_t n>
+  Position& setMine(int ntotal, const std::array<Piece, n>& pieces, const std::array<Square, n>& positions, Square epSquare, StateInfo* si, Thread* th, Color sideToMoveIn);
   Position& set(const std::string& fenStr, bool isChess960, StateInfo* si, Thread* th);
   Position& set(const std::string& code, Color c, StateInfo* si);
   const std::string fen() const;
