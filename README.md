@@ -2,7 +2,7 @@
 
 **ChessCounter tries to accurately calculate the number of legal chess positions.**
 
-Claude Shannon first made an estimate of around 1E+43 chess positions in 1950: [[1]](https://vision.unipv.it/IA1/ProgrammingaComputerforPlayingChess.pdf). Victor Allis makes a mention that an upper bound of 5E+52 has been calculated and assumes the true space-complexity to be close to 1E+50 [[2]](https://www.dphu.org/uploads/attachements/books/books_3721_0.pdf). John Tromp came up with 4.5E+46  [[3]](https://tromp.github.io/chess/chess.html) and possibly 7.7E+45, Will Entriken with 2.4E+49 [[4]](https://groups.google.com/g/rec.games.chess.computer/c/vmvI0ePH2kI) and Shirish Chinchalkar with 1.8E+46 [[5]](https://content.iospress.com/articles/icga-journal/icg19-3-05). There are some more attempts here: [[6]](https://codegolf.stackexchange.com/questions/19397/smallest-chess-board-compression). 
+Claude Shannon first made an estimate of around 1E+43 chess positions in 1950: [[1]](https://vision.unipv.it/IA1/ProgrammingaComputerforPlayingChess.pdf). Victor Allis makes a mention that an upper bound of 5E+52 has been calculated and assumes the true space-complexity to be close to 1E+50 [[2]](https://www.dphu.org/uploads/attachements/books/books_3721_0.pdf). John Tromp came up with 4.5E+46  [[3]](https://tromp.github.io/chess/chess.html) and possibly 7.7E+45, Will Entriken with 2.4E+49 [[4]](https://groups.google.com/g/rec.games.chess.computer/c/vmvI0ePH2kI) and Shirish Chinchalkar with 1.8E+46 [[5]](https://content.iospress.com/articles/icga-journal/icg19-3-05). Arshia Atashpendar calculates 7.22E+40 without any promotions, castling, or en passant[[6]](https://zenodo.org/record/163434/files/Graduate_thesis_Arshia.pdf). There are some more attempts here: [[7]](https://codegolf.stackexchange.com/questions/19397/smallest-chess-board-compression). 
 
 As we can see there is a large variety of estimates. This program attempts to do it in a more documented and systematic way to come up with a better answer.
 
@@ -63,7 +63,7 @@ The following rules for determining if a position is legal are used (white-to-mo
 
 ## Results
 
-Upper bound estimate of possible legal chess position (counts en passant, castling, sides to move, allows underpromotions): **8.6E+45**
+Upper bound estimate of possible legal chess position (counts en passant, castling, sides to move, allows underpromotions): **8.5E+45**
 
 Counting by the number of pieces on the board shows that there are most legal positions with 29 pieces. The number of possible positions with 22 or fewer pieces or with a complete set of 32 pieces is negligible compared to this. In computer chess, perfect-play endgame tablesbases were so far only created up to 7 pieces (Lomonosov, Syzygy). Creating endgame tablebases for 8 pieces might be possible on one of the top supercomputers but each additional piece means a couple of magnitudes more of storage and computing power is needed.
 
