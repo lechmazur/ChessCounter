@@ -55,7 +55,7 @@ The following rules for determining if a position is legal are used:
 
      C. Black previously made a promotion move. The white king would have to be attacked by the promoted piece and this pawn must have been previously blocking another piece from checking.
 
-14. A position in which the white king is checked by one black attacker is illegal if the checking piece has no place to come from because it would have been checking the white king at all possible source locations before it moved (or is just completely blocked off). This rule has to consider that castling could result in a check and that a black piece on the 1st rank could have captured or moved like a pawn (e.g. a rook at d1 could have come from e2). We only look at checks when the piece is checking "directly" (when it's a knight or a pawn or when there are no squares between the white king and the black pieces). A pawn that hasn’t moved from the starting location can’t be checking (e.g. black pawn at e7).
+14. A position in which the white king is checked by one black attacker is illegal if the checking piece has no place to come from because it would have been checking the white king at all possible source locations before it moved (or is just completely blocked off). This rule has to consider that castling could result in a check and that a black piece on the 1st rank could have captured or moved like a pawn (e.g. a rook at d1 could have come from e2) because it could have been promoted. We only look at checks when the piece is checking "directly" (when it's a knight or a pawn or when there are no squares between the white king and the black pieces). A pawn that hasn’t moved from the starting location can’t be checking (e.g. black pawn at e7).
 
 
 ## Results
