@@ -63,7 +63,7 @@ The following rules for determining if a position is legal are used (white-to-mo
 
 ## Results
 
-Upper bound estimate of possible legal chess position (counts en passant, castling, sides to move, allows underpromotions): **8.8E+45**
+Upper bound estimate of possible legal chess position (counts en passant, castling, sides to move, allows underpromotions): **8.7E+45**
 
 The highest estimate of "realistic" possible legal chess position (counts en passant, castling, sides to move) with at most 3 queens per side (6 total) and without underpromotions as calculated by the program: **6.4E+41**
 
@@ -76,17 +76,20 @@ Counting by the number of pieces on the board shows that there are most legal po
 
 If we were to create computer endgame tablebases, we could reduce the number of positions to be considered. For example, for positions with no pawns, there are horizontal, vertical, and diagonal symmetries. 
 
-In 1.9% of legal positions (1.6E+44), the side to move is mated.
+In 2.0% of legal positions (1.7E+44), the side to move is mated.
 
 
-In 4.1% of legal positions (3.6E+44), the side to move has a mate in 1.
+In 4.0% of legal positions (3.5E+44), the side to move has a mate in 1.
 
 In 2.8% of legal positions (2.4E+44), the side to move has a mate in 2.
 
-In 1.9% of legal positions (1.6E+44), the side to move has a mate in 3.
+In 1.9% of legal positions (1.7E+44), the side to move has a mate in 3.
 
-In 1.3% of legal positions (1.2E+44), the side to move has a mate in 4.
+In 1.4% of legal positions (1.2E+44), the side to move has a mate in 4.
 
+In 1.2% of legal positions (1.0E+44), the side to move has a mate in 5.
+
+In 1.1% of legal positions (9.2E+43), the side to move has a mate in 6.
 
 ## Notes
 
