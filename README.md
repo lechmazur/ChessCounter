@@ -76,16 +76,16 @@ Counting by the number of pieces on the board shows that there are most legal po
 
 If we were to create computer endgame tablebases, we could reduce the number of positions to be considered. For example, for positions with no pawns, there are horizontal, vertical, and diagonal symmetries. 
 
-In 1.4% of legal positions (1.2E+44), the side to move is mated.
+In 1.9% of legal positions (1.6E+44), the side to move is mated.
 
 
-In 4.4% of legal positions (3.8E+44), the side to move has a mate in 1.
+In 4.1% of legal positions (3.6E+44), the side to move has a mate in 1.
 
 In 2.8% of legal positions (2.4E+44), the side to move has a mate in 2.
 
 In 1.9% of legal positions (1.6E+44), the side to move has a mate in 3.
 
-In 1.4% of legal positions (1.2E+44), the side to move has a mate in 4.
+In 1.3% of legal positions (1.2E+44), the side to move has a mate in 4.
 
 
 ## Notes
