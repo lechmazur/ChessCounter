@@ -2,7 +2,7 @@
 
 **ChessCounter tries to accurately calculate the number of legal chess positions.**
 
-Claude Shannon first made an estimate of around 1E+43 chess positions in 1950: [[1]](https://vision.unipv.it/IA1/ProgrammingaComputerforPlayingChess.pdf). Victor Allis makes a mention that an upper bound of 5E+52 has been calculated and assumes the true space-complexity to be close to 1E+50 [[2]](https://www.dphu.org/uploads/attachements/books/books_3721_0.pdf). John Tromp came up with 4.5E+46  [[3]](https://tromp.github.io/chess/chess.html) and possibly 7.7E+45, Will Entriken with 2.4E+49 [[4]](https://groups.google.com/g/rec.games.chess.computer/c/vmvI0ePH2kI) and Shirish Chinchalkar with 1.8E+46 [[5]](https://content.iospress.com/articles/icga-journal/icg19-3-05). Arshia Atashpendar calculates 7.22E+40 without any promotions, castling, or en passant[[6]](https://zenodo.org/record/163434/files/Graduate_thesis_Arshia.pdf). There are some more attempts here: [[7]](https://codegolf.stackexchange.com/questions/19397/smallest-chess-board-compression). 
+Claude Shannon first made an estimate of around 1E+43 chess positions in 1950: [[1]](https://vision.unipv.it/IA1/ProgrammingaComputerforPlayingChess.pdf). Victor Allis makes a mention that an upper bound of 5E+52 has been calculated and assumes the true space-complexity to be close to 1E+50 [[2]](https://www.dphu.org/uploads/attachements/books/books_3721_0.pdf). John Tromp came up with 4.5E+46  [[3]](https://tromp.github.io/chess/chess.html) and possibly 7.7E+45, Will Entriken with 2.4E+49 [[4]](https://groups.google.com/g/rec.games.chess.computer/c/vmvI0ePH2kI) and Shirish Chinchalkar with 1.8E+46 [[5]](https://content.iospress.com/articles/icga-journal/icg19-3-05). Arshia Atashpendar calculates 7.22E+40 without any promotions, castling, or en passant [[6]](https://zenodo.org/record/163434/files/Graduate_thesis_Arshia.pdf). There are some more attempts here: [[7]](https://codegolf.stackexchange.com/questions/19397/smallest-chess-board-compression). 
 
 As we can see there is a large variety of estimates. This program attempts to do it in a more documented and systematic way to come up with a better answer.
 
@@ -52,13 +52,13 @@ The following rules for determining if a position is legal are used (white-to-mo
 
      B. One of the checking pieces was blocking another currently checking piece from checking previously. This means that, for example, the checks can’t be from two rooks at once (but see C.). If a piece that moved to enable the discovery check has an attacking slider piece behind it that would be checking the white king if the square was empty, that position would have been illegal (black-to-move and white king in check).
 
-     C. Black previously made a promotion move. The white king would have to be attacked by the promoted piece and this pawn must have been previously blocking another piece from checking.
+     C. Black previously made a promotion move. The white king would have to be attacked by the promoted piece and this pawn must have been previously blocking another piece from checking. There must be fewer than 8 black pawns on the board now. If the pawn moved diagonally, then there was a capture and there must be fewer than 8 white non-pawn pieces.
 
 14. A position in which the white king is checked by one black attacker is illegal if the checking piece has no place to come from because it would have been checking the white king at all possible source locations before it moved (or is just completely blocked off). This rule has to consider that castling could result in a check and that a black piece on the 1st rank could have captured or moved like a pawn (e.g. a rook at d1 could have come from e2) because it could have been promoted. We only look at checks when the piece is checking "directly" (when it's a knight or a pawn or when there are no squares between the white king and the black piece). 
 
 15. A pawn that hasn’t moved from the starting location can’t be checking (e.g. the black pawn at e7).
 
-16. (Restricted case only) If there are still pawns in their starting locations blocking a bishop then the only bishop on the corresponding square color has to be behind these pawns. E.g. if there are white pawns at e2 and g2, a bishop that moves over white squares can only be at f1.
+16. (Restricted case only) If there are still pawns in their starting locations blocking a bishop then the only bishop on the corresponding square color has to be behind these pawns. E.g. if there are white pawns at e2 and g2, a white bishop that moves over white squares can only be at f1.
 
 
 ## Results
