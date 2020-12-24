@@ -84,6 +84,8 @@ void validate(LegalParams& lp)
 
 	vector<std::pair<std::string, bool>> fens =
 	{
+		{"1RbqB3/BQ1p3P/rN4N1/Q1pR2R1/n2N2nb/k2q4/2B1rr1P/1rK1rQ2 w - - 0 1", false},
+		{"rnbqkbnr/ppppppp1/8/8/8/6P1/PPPPPPP1/RNBQKBNR b KQkq - 0 2", true},
 		{"rnbqkb1r/ppppppp1/8/7P/7p/8/PPPPPP1P/RNBQKBNR w KQkq - 0 2", true},
 		{"rnbqkbnr/ppppppp1/8/7P/7p/8/PPPPPPP1/RNBQKBNR w KQkq - 0 2", false},
 		{"rnbqkbnr/pppppp2/7P/7P/7p/8/PPPPPP2/RNBQKBNR w KQkq - 0 2", false},
@@ -160,6 +162,12 @@ void Runner::posEstimate(int argc, char* argv[])
 	for (auto& k : kingIn)
 		k.resize(nthreads, 0);
 
+	vector<int64_t> matesCount(nthreads, 0), stalematesCount(nthreads, 0);
+	const int MATE_MOVES = 4;
+	vector<vector<int64_t>> matesInCount(MATE_MOVES+1);
+	for (auto& m : matesInCount)
+		m.resize(nthreads, 0);
+
 	auto start = std::chrono::steady_clock::now();
 
 #pragma omp parallel for num_threads(nthreads)
@@ -207,6 +215,32 @@ void Runner::posEstimate(int argc, char* argv[])
 					legalRestricted[tnum] += countAs;
 					byCountRestricted[tnum][lc.totalPieces()] += countAs;
 				}
+
+#pragma omp critical
+				{
+					//cout << tnum << "    " << lc.fen() << endl;
+				}
+				auto [mated, stalemated] = lc.isMatedOrStalemated();
+				if (mated)
+					matesCount[tnum]++;
+				else if (stalemated)
+					stalematesCount[tnum]++;
+
+				for (int m=1; m<=MATE_MOVES; m++)
+				{
+					auto matedInM = lc.isMate(m);
+					if (matedInM)
+					{
+						matesInCount[m][tnum]++;
+						break;
+					}
+				}
+
+#pragma omp critical
+				{
+					//cout << tnum << "-----" << lc.fen() << endl;
+				}
+
 			}
 
 			if (all[tnum] % (1024 * 2048) == (1024 * 2048 * tnum / nthreads))
@@ -283,6 +317,16 @@ void Runner::posEstimate(int argc, char* argv[])
 							c++;
 						}
 
+						auto matedTotal = vectorSum(matesCount);
+						auto stalematedTotal = vectorSum(stalematesCount);
+						cout << "Mated: " << matedTotal << " / " << totalGood << "    " << (double)matedTotal / totalGood << "   estimate = " << (double)matedTotal / totalAny * totalPossibilities <<  endl;
+						cout << "Stalemated: " << stalematedTotal << " / " << totalGood << "    " << (double)stalematedTotal / totalGood << "   estimate = " << (double)stalematedTotal / totalAny * totalPossibilities << endl;
+
+						for (int m = 1; m <= MATE_MOVES; m++)
+						{
+							auto matesTotal = vectorSum(matesInCount[m]);
+							cout << "Mates in " << m << ": " << matesTotal << " / " << totalGood << "    " << (double)matesTotal / totalGood << "   estimate = " << (double)matesTotal / totalAny * totalPossibilities << endl;
+						}
 					}
 				}
 			}

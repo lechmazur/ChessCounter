@@ -81,7 +81,7 @@ public:
 	[[nodiscard]] int countEnPassantPossibilities() const;
 	[[nodiscard]] int countAttacks() const;
 	void listBlackEnPassants();
-	[[nodiscard]] bool betweenKingAndAttacker(Square attacker, PieceType pt) const;
+	[[nodiscard]] Bitboard betweenKingAndAttacker(Square attacker, PieceType pt) const;
 	void makeListOfAttackers();
 	[[nodiscard]] bool checkDoubleAttacked() const;
 	[[nodiscard]] bool blackPossCastled(const Attacker& att) const;
@@ -94,5 +94,8 @@ public:
 	[[nodiscard]] bool isSanityCheck() const;
 	[[nodiscard]] bool isSanityCheck2() const;
 	[[nodiscard]] bool checkOpening(const OpeningLimit& ol) const;
+	[[nodiscard]] std::pair<bool,bool> isMatedOrStalemated() const;
+	[[nodiscard]] bool isMated(int inMoves);
+	[[nodiscard]] bool isMate(int inMoves);
 };
 

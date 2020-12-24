@@ -4,7 +4,12 @@
 #include "thread.h"
 #include <omp.h>
 #include <vector>
+#include "uci.h"
 
+
+using std::make_pair;
+using std::cout;
+using std::endl;
 
 template <typename Tarr>
 void resetArr(Tarr& v)
@@ -26,7 +31,7 @@ int LegalChecker::getKingInPawnSquares() const
 
 std::pair<Square, Square> LegalChecker::getKings() const
 {
-	return std::make_pair(wk, bk);
+	return make_pair(wk, bk);
 }
 
 const std::array<int, PIECE_NB>& LegalChecker::getCount() const
@@ -720,7 +725,7 @@ void LegalChecker::listBlackEnPassants()
 }
 
 
-bool LegalChecker::betweenKingAndAttacker(Square attacker, PieceType pt) const
+Bitboard LegalChecker::betweenKingAndAttacker(Square attacker, PieceType pt) const
 {
 	return attacks_bb(pt, attacker, posBTM.pieces())
 		& attacks_bb(pt, wk, posBTM.pieces()) & (~posBTM.pieces());
@@ -760,7 +765,7 @@ void LegalChecker::makeListOfAttackers()
 				//Promotion possible
 				//White king's location couldn't have been attacked by that black pawn before promotion or it'd be an illegal position
 				a.comeFrom |= shift<NORTH>(a.abit) & ~posBTM.pieces() & ~PawnAttacks[WHITE][wk];
-				if (nWhite - count[W_PAWN] < 8)	//Must have been a capture for the pawn to move diagonally and it couldn't be a pawn on rank 1
+				if (nWhite < 16)	//Must have been a capture for the pawn to move diagonally and it couldn't be a pawn on rank 1
 					a.comeFrom |= (shift<NORTH_WEST>(a.abit) | shift<NORTH_EAST>(a.abit)) & ~posBTM.pieces() & ~PawnAttacks[WHITE][wk];
 			}
 		}
@@ -1041,6 +1046,91 @@ bool LegalChecker::checkOpening(const OpeningLimit& ol) const
 			return false;
 
 	return true;
+}
+
+std::pair<bool, bool> LegalChecker::isMatedOrStalemated() const
+{
+	auto legalMoves = MoveList<LEGAL>(posWTM);
+	if (legalMoves.size() == 0)
+		if (posWTM.checkers())
+		{
+			return make_pair(true, false);
+		}
+		else
+			return make_pair(false, true);
+	return make_pair(false, false);
+}
+
+
+bool LegalChecker::isMated(int inMoves)
+{
+	auto [matedNow, stalematedNow] = isMatedOrStalemated();
+	if (matedNow)
+		return true;
+	if (stalematedNow)
+		return false;
+
+	bool allMated = true;
+	for (const Move move : MoveList<LEGAL>(posWTM))
+	{
+		StateInfo st;
+
+		posWTM.do_move(move, st);
+		posWTM.set_check_info(&st);
+
+		bool mate = isMate(inMoves);
+		if (!mate)
+			allMated = false;
+
+		posWTM.undo_move(move);
+		posWTM.set_check_info(&st);
+		if (!allMated)
+		{
+			break;
+		}
+	}
+	return allMated;
+}
+
+bool LegalChecker::isMate(int inMoves)
+{
+	bool foundMate = false;
+	for (int mm = 1; mm <= inMoves; mm++)
+	{
+		for (const Move move : MoveList<LEGAL>(posWTM))
+		{
+			StateInfo st;
+
+			posWTM.do_move(move, st);
+			posWTM.set_check_info(&st);
+			auto legalMoves = MoveList<LEGAL>(posWTM);
+			if (legalMoves.size() == 0)
+				if (posWTM.checkers())
+				{
+					foundMate = true;
+				}
+
+			if (!foundMate && mm >= 2)
+			{
+				bool blackMated = isMated(mm - 1);
+				if (blackMated)
+					foundMate = true;
+			}
+
+			posWTM.undo_move(move);
+			posWTM.set_check_info(&st);
+			if (foundMate && mm == 5)
+			{
+				cout << UCI::square(from_sq(move)) << "  " << UCI::square(to_sq(move)) << "   " << posWTM.fen() << endl;
+				break;
+			}
+		}
+		if (foundMate)
+		{
+			break;
+		}
+	}
+	return foundMate;
 }
 
 //underpromotions. Is promotion to minor pieces allowed
