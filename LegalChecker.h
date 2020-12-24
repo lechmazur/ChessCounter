@@ -24,6 +24,7 @@ struct Attacker
 	Bitboard comeFrom = 0;					//Where could an attacker come from? Only from where it can normally move currently but it must be empty locations
 													//and white could not be in check then (or it'd be an illegal position) but this only matters for queens
 													//Also it could have come from RANK_2 in case of promotions
+													//Only for double-attacks
 	Bitboard middleSquares = 0;			//Squares between an attacker and white king (for sliders)
 	bool directAttack = false;				//Direct attacks are attacks by pawns or knights or other pieces from the neighboring square
 													//7k/8/3rp3/3K4/3qb3/4n3/8/8 w - - 0 2

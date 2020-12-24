@@ -744,21 +744,25 @@ void LegalChecker::makeListOfAttackers()
 		if (a.pt == QUEEN)		//Find out if queens attack as rooks or bishops
 			a.pt = (PseudoAttacks[ROOK][a.pos] & wkBit) ? ROOK : BISHOP;
 
-		if (a.pt == PAWN)
+		if (nattacks == 2)
 		{
-			a.comeFrom = (shift<NORTH_WEST>(a.abit) | shift<NORTH_EAST>(a.abit)) & ~posBTM.pieces();
-			//No need to worry about moves such as b7-b5 or b7-b6 because a non-capture pawn move can't result in discovery check without promotions
-		}
-		else
-			a.comeFrom = a.piece == B_QUEEN ? 0 : attacks_bb(a.pt, a.pos, posBTM.pieces()) & ~posBTM.pieces();	//Queen can't be a blocker
+			if (a.pt == PAWN)
+			{
+				if (nWhite < 16)	//Must have captured a white piece
+					a.comeFrom = (shift<NORTH_WEST>(a.abit) | shift<NORTH_EAST>(a.abit)) & ~posBTM.pieces();
+					//No need to worry about moves such as b7-b5 or b7-b6 because a non-capture pawn move can't result in discovery check without promotions
+			}
+			else
+				a.comeFrom = a.piece == B_QUEEN ? 0 : attacks_bb(a.pt, a.pos, posBTM.pieces()) & ~posBTM.pieces();	//Queen can't be a blocker
 
-		if (a.rank == RANK_1 && count[B_PAWN] < 8)	//Promotion by black means less than 8 black pawns
-		{
-			//Promotion possible
-			//White king's location couldn't have been attacked by that black pawn before promotion or it'd be an illegal position
-			a.comeFrom |= shift<NORTH>(a.abit) & ~posBTM.pieces() & ~PawnAttacks[WHITE][wk];
-			if (nWhite - count[W_PAWN] < 8)	//Must have been a capture for the pawn to move diagonally and it couldn't be a pawn on rank 1
-				a.comeFrom |= (shift<NORTH_WEST>(a.abit) | shift<NORTH_EAST>(a.abit)) & ~posBTM.pieces() & ~PawnAttacks[WHITE][wk];
+			if (a.rank == RANK_1 && count[B_PAWN] < 8)	//Promotion by black means less than 8 black pawns
+			{
+				//Promotion possible
+				//White king's location couldn't have been attacked by that black pawn before promotion or it'd be an illegal position
+				a.comeFrom |= shift<NORTH>(a.abit) & ~posBTM.pieces() & ~PawnAttacks[WHITE][wk];
+				if (nWhite - count[W_PAWN] < 8)	//Must have been a capture for the pawn to move diagonally and it couldn't be a pawn on rank 1
+					a.comeFrom |= (shift<NORTH_WEST>(a.abit) | shift<NORTH_EAST>(a.abit)) & ~posBTM.pieces() & ~PawnAttacks[WHITE][wk];
+			}
 		}
 
 		a.middleSquares = a.pt == PAWN ? 0 : betweenKingAndAttacker(a.pos, a.pt);
