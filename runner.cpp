@@ -163,7 +163,7 @@ void Runner::posEstimate(int argc, char* argv[])
 		k.resize(nthreads, 0);
 
 	vector<int64_t> matesCount(nthreads, 0), stalematesCount(nthreads, 0);
-	const int MATE_MOVES = 7;
+	const int MATE_MOVES = 6;
 	vector<vector<int64_t>> matesInCount(MATE_MOVES+1);
 	for (auto& m : matesInCount)
 		m.resize(nthreads, 0);
