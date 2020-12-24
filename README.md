@@ -52,7 +52,7 @@ The following rules for determining if a position is legal are used (white-to-mo
 
      B. One of the checking pieces was blocking another currently checking piece from checking previously. This means that, for example, the checks can’t be from two rooks at once (but see C.). If a piece that moved to enable the discovery check has an attacking slider piece behind it that would be checking the white king if the square was empty, that position would have been illegal (black-to-move and white king in check).
 
-     C. Black previously made a promotion move. The white king would have to be attacked by the promoted piece and this pawn must have been previously blocking another piece from checking. There must be fewer than 8 black pawns on the board.
+     C. Black previously made a promotion move. The white king would have to be attacked by the promoted piece and this pawn must have been previously blocking another piece from checking. There must be fewer than 8 black pawns on the board now. If the pawn moved diagonally, then there was a capture and there must be fewer than 8 white non-pawn pieces.
 
 14. A position in which the white king is checked by one black attacker is illegal if the checking piece has no place to come from because it would have been checking the white king at all possible source locations before it moved (or is just completely blocked off). This rule has to consider that castling could result in a check and that a black piece on the 1st rank could have captured or moved like a pawn (e.g. a rook at d1 could have come from e2) because it could have been promoted. We only look at checks when the piece is checking "directly" (when it's a knight or a pawn or when there are no squares between the white king and the black piece). 
 
