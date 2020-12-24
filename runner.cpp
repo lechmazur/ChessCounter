@@ -163,7 +163,7 @@ void Runner::posEstimate(int argc, char* argv[])
 		k.resize(nthreads, 0);
 
 	vector<int64_t> matesCount(nthreads, 0), stalematesCount(nthreads, 0);
-	const int MATE_MOVES = 4;
+	const int MATE_MOVES = 7;
 	vector<vector<int64_t>> matesInCount(MATE_MOVES+1);
 	for (auto& m : matesInCount)
 		m.resize(nthreads, 0);
@@ -228,7 +228,7 @@ void Runner::posEstimate(int argc, char* argv[])
 
 				for (int m=1; m<=MATE_MOVES; m++)
 				{
-					auto matedInM = lc.isMate(m);
+					auto matedInM = lc.isMate(m, false);
 					if (matedInM)
 					{
 						matesInCount[m][tnum]++;
@@ -243,7 +243,7 @@ void Runner::posEstimate(int argc, char* argv[])
 
 			}
 
-			if (all[tnum] % (1024 * 2048) == (1024 * 2048 * tnum / nthreads))
+			if (all[tnum] % (1024 * 1024) == (1024 * 1024 * tnum / nthreads))
 			{
 #pragma omp critical
 				{

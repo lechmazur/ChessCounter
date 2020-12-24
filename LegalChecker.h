@@ -96,6 +96,6 @@ public:
 	[[nodiscard]] bool checkOpening(const OpeningLimit& ol) const;
 	[[nodiscard]] std::pair<bool,bool> isMatedOrStalemated() const;
 	[[nodiscard]] bool isMated(int inMoves);
-	[[nodiscard]] bool isMate(int inMoves);
+	[[nodiscard]] bool isMate(int inMoves, bool noShorter);
 };
 

@@ -1070,67 +1070,147 @@ bool LegalChecker::isMated(int inMoves)
 	if (stalematedNow)
 		return false;
 
-	bool allMated = true;
-	for (const Move move : MoveList<LEGAL>(posWTM))
+	auto oneMove = [&](Move move)
 	{
 		StateInfo st;
 
 		posWTM.do_move(move, st);
 		posWTM.set_check_info(&st);
 
-		bool mate = isMate(inMoves);
-		if (!mate)
-			allMated = false;
+		bool mate = isMate(inMoves, false);
 
 		posWTM.undo_move(move);
 		posWTM.set_check_info(&st);
-		if (!allMated)
+		return mate;
+	};
+
+	auto moveList = MoveList<LEGAL>(posWTM);
+	std::array<Move,256> ordered;
+	size_t nmoves = moveList.size();
+	int n = 0;
+	for (const Move move : MoveList<LEGAL>(posWTM))
+	{
+		if (posWTM.gives_check(move))
 		{
-			break;
+			bool mate = oneMove(move);
+
+			if (!mate)
+				return false;
 		}
 	}
-	return allMated;
+	for (const Move move : MoveList<LEGAL>(posWTM))
+	{
+		if (!posWTM.gives_check(move) && posWTM.capture_or_promotion(move) && pieceOn(to_sq(move)) == W_QUEEN)
+			ordered[n++] = move;
+	}
+	for (const Move move : MoveList<LEGAL>(posWTM))
+	{
+		if (!posWTM.gives_check(move) && posWTM.capture_or_promotion(move) && !(pieceOn(to_sq(move)) == W_QUEEN))
+			ordered[n++] = move;
+	}
+	for (const Move move : MoveList<LEGAL>(posWTM))
+	{
+		if (!posWTM.gives_check(move) && !posWTM.capture_or_promotion(move))
+			ordered[n++] = move;
+	}
+
+	for (int x=0; x<n; x++)
+	{
+		Move move = ordered[x];
+		bool mate = oneMove(move);
+
+		if (!mate)
+			return false;
+	}
+	return true;
 }
 
-bool LegalChecker::isMate(int inMoves)
+bool LegalChecker::isMate(int inMoves, bool noShorter)
 {
-	bool foundMate = false;
-	for (int mm = 1; mm <= inMoves; mm++)
+	auto oneMove = [&](Move move, int mm)
 	{
+		StateInfo st;
+		bool foundMate = false;
+
+		posWTM.do_move(move, st);
+		posWTM.set_check_info(&st);
+		auto legalMoves = MoveList<LEGAL>(posWTM);
+		if (legalMoves.size() == 0)
+			if (posWTM.checkers())
+			{
+				foundMate = true;
+			}
+
+		if (!foundMate && mm >= 2)
+		{
+			bool blackMated = isMated(mm - 1);
+			if (blackMated)
+				foundMate = true;
+		}
+
+		posWTM.undo_move(move);
+		posWTM.set_check_info(&st);
+		return foundMate;
+	};
+
+	bool foundMate = false;
+	int startAt = 1;
+	if (noShorter)
+		startAt = inMoves;
+	for (int mm = startAt; mm <= inMoves; mm++)
+	{
+		auto moveList = MoveList<LEGAL>(posWTM);
+		std::array<Move, 256> ordered;
+		size_t nmoves = moveList.size();
+		int n = 0;
 		for (const Move move : MoveList<LEGAL>(posWTM))
 		{
-			StateInfo st;
-
-			posWTM.do_move(move, st);
-			posWTM.set_check_info(&st);
-			auto legalMoves = MoveList<LEGAL>(posWTM);
-			if (legalMoves.size() == 0)
-				if (posWTM.checkers())
+			if (posWTM.gives_check(move))
+			{
+				bool matHere = oneMove(move, mm);
+				if (matHere)
 				{
-					foundMate = true;
+					if (mm == 6)
+					{
+						//cout << UCI::square(from_sq(move)) << "  " << UCI::square(to_sq(move)) << "   " << posWTM.fen() << endl;
+					}
+					return true;
 				}
-
-			if (!foundMate && mm >= 2)
-			{
-				bool blackMated = isMated(mm - 1);
-				if (blackMated)
-					foundMate = true;
-			}
-
-			posWTM.undo_move(move);
-			posWTM.set_check_info(&st);
-			if (foundMate && mm == 5)
-			{
-				cout << UCI::square(from_sq(move)) << "  " << UCI::square(to_sq(move)) << "   " << posWTM.fen() << endl;
-				break;
 			}
 		}
-		if (foundMate)
+		for (const Move move : MoveList<LEGAL>(posWTM))
 		{
-			break;
+			if (!posWTM.gives_check(move) && posWTM.capture_or_promotion(move) && pieceOn(to_sq(move)) == B_QUEEN)
+				ordered[n++] = move;
+		}
+		for (const Move move : MoveList<LEGAL>(posWTM))
+		{
+			if (!posWTM.gives_check(move) && posWTM.capture_or_promotion(move) && !(pieceOn(to_sq(move)) == B_QUEEN))
+				ordered[n++] = move;
+		}
+		for (const Move move : MoveList<LEGAL>(posWTM))
+		{
+			if (!posWTM.gives_check(move) && !posWTM.capture_or_promotion(move))
+				ordered[n++] = move;
+		}
+
+		for (int x = 0; x < n; x++)
+		{
+			Move move = ordered[x];
+
+			bool matHere = oneMove(move, mm);
+			if (matHere)
+			{
+				if (mm == 7)
+				{
+					//cout << UCI::square(from_sq(move)) << "  " << UCI::square(to_sq(move)) << "   " << posWTM.fen() << endl;
+				}
+				return true;
+			}
+
 		}
 	}
-	return foundMate;
+	return false;
 }
 
 //underpromotions. Is promotion to minor pieces allowed
