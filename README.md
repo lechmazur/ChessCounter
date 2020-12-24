@@ -58,7 +58,7 @@ The following rules for determining if a position is legal are used (white-to-mo
 
 15. A pawn that hasn’t moved from the starting location can’t be checking (e.g. the black pawn at e7).
 
-16. (Restricted case only) If there are still pawns in their starting locations blocking a bishop then the only bishop on the corresponding square color has to be behind these pawns. E.g. if there are white pawns at e2 and g2, a bishop that moves over white squares can only be at f1.
+16. (Restricted case only) If there are still pawns in their starting locations blocking a bishop then the only bishop on the corresponding square color has to be behind these pawns. E.g. if there are white pawns at e2 and g2, a white bishop that moves over white squares can only be at f1.
 
 
 ## Results
