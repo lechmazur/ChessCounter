@@ -14,6 +14,8 @@ First, we place two kings. This can be done in 3,612 different legal ways (so th
 ## Restricted case search space
 Disallowing underpromotions and limiting queens to three per side reduces the search space greatly. There are now at most 3 queens, 2 knights, 2 bishops, 2 rooks, and 8 pawns per side. 2 * 3,612 * Sum(Sum(Sum(Sum(Sum(Sum(Sum(Sum(Sum(Sum(Comb(62,wp) * Comb(62-wp,bp) * Comb(62-wp-bp,wn) * Comb(62-wp-bp-wn,bn) * Comb(62-wp-bp-wn-bn,wb) * Comb(62-wp-bp-wn-bn-wb,bb) * Comb(62-wp-bp-wn-bn-wb-bb,wr) * Comb(62-wp-bp-wn-bn-wb-bb-wr,br) * Comb(62-wp-bp-wn-bn-wb-bb-wr-br,wq) * Comb(62-wp-bp-wn-bn-wb-bb-wr-br-wq,bq),wp=[0,8]),bp=[0,8]),wn=[0,2]),bn=[0,2]),wb=[0,2]),bb=[0,2]),wr=[0,2]),br=[0,2]),wq=[0,min(min(3,15-wp-wn-wb-wr),30-wp-wn-wb-wr-bp-bn-bb-br)],bq=[0,min(min(3,15-bp-bn-bb-br),30-wp-wn-wb-wr-bp-bn-bb-br-wq)]) = 10969175368880644381707380652409200270873861528 (1.10E+46) combinations.
 
+Analogously, the search space for even more restricted case with one queen per side is 2.12E+43.
+
 ## Monte Carlo search 
 This program uses a Monte Carlo approach - it samples billions of random positions out of these possibilities and applies various rules to check whether each sample position is legal and whether castling or en passant are possible. When estimating the number of "likely" legal positions (restricted use case above), we need to make sure to sample proportionally to the number of positions for each combination of the number of various pieces. There are 933,156 such combinations to choose from. Some of the positions might have castling and en passant rights, increasing the number of possibilities. 
 
@@ -63,11 +65,11 @@ The following rules for determining if a position is legal are used (white-to-mo
 
 ## Results
 
-Upper bound estimate of possible legal chess position (counts en passant, castling, sides to move, allows underpromotions): **8.7E+45**
+Upper bound estimate of possible legal chess position (counts en passant, castling, sides to move, allows underpromotions): **8.7E+45**.
 
-The highest estimate of "realistic" possible legal chess position (counts en passant, castling, sides to move) with at most 3 queens per side (6 total) and without underpromotions as calculated by the program: **6.4E+41**
+The highest estimate of "realistic" possible legal chess position (counts en passant, castling, sides to move) with at most 3 queens per side (6 total) and without underpromotions as calculated by the program: **6.4E+41**.
 
-6 queens on the board has occurred a few times in real games, so going below this would be too limiting.
+6 queens on the board has occurred a few times in real games, so going below this is very limiting but we can also calculate that with no underpromotions and at most one queen per side there are around **8.2E+38 positions**.
 
 
 ## Additional Stats
