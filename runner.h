@@ -17,7 +17,9 @@ private:
 	std::vector<OpeningLimit> openingsToCheck;
 
 public:
+	void saveFile(std::string fname, const std::vector<std::string>& v);
 	void init();
+	void generateFens(int argc, char* argv[]);
 	void posEstimate(int argc, char* argv[]);
 };
 

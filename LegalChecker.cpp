@@ -51,8 +51,86 @@ void LegalChecker::init(LegalParams* lpIn, int tnum)
 	maxcount[B_BISHOP] = 2;
 	maxcount[B_ROOK] = 2;
 	maxcount[B_QUEEN] = 3;
+
 	lp = lpIn;
 	threadNum = tnum;
+}
+
+
+//Create random board
+bool LegalChecker::prepareMate()
+{
+	resetArr(count);
+	int n = 2;
+	auto addOne = [&](Piece p, int ncount)
+	{
+		count[p] = ncount;
+		for (int x = 0; x < ncount; x++)
+		{
+			pieces[n] = p;
+			n++;
+		}
+	};
+
+	int wp = 0;
+	int bp = 0;
+	int wn = 1;
+	int bn = 1;
+	int wq = 0;
+	int bq = 0;
+	int wb = 0;
+	int bb = 0;
+	int wr = 1;
+	int br = 1;
+	nTotal = wp + bp + wn + bn + wb + bb + wr + br + wq + bq + 2;
+	assert(wp + bp <= 16 && wn + bn <= 4 && wb + bb <= 4 && wr + br <= 4 && wq + bq <= 2);
+	assert(nTotal <= 32);
+
+	addOne(W_PAWN, wp);
+	addOne(B_PAWN, bp);
+	addOne(W_QUEEN, wq);
+	addOne(B_QUEEN, bq);
+	addOne(W_KNIGHT, wn);
+	addOne(B_KNIGHT, bn);
+	addOne(W_BISHOP, wb);
+	addOne(B_BISHOP, bb);
+	addOne(W_ROOK, wr);
+	addOne(B_ROOK, br);
+
+	Bitboard bbAll = 0;
+
+	auto drawLoc = [&]()
+	{
+		int rLoc = -1;
+		do
+		{
+			rLoc = lp->intRand(int(SQ_A1), int(SQ_H8), threadNum);
+		} while ((bbAll & ((uint64_t)1 << rLoc)) != 0);
+		bbAll |= (uint64_t)1 << rLoc;
+		return Square(rLoc);
+	};
+
+	int idx = lp->intRand(threadNum, lp->kingLocDistribution);
+	wk = lp->whiteKingLocs[idx];
+	bk = lp->blackKingLocs[idx];
+
+	squares[0] = wk;
+	squares[1] = bk;
+	pieces[0] = W_KING;
+	pieces[1] = B_KING;
+	setKingInfo();
+
+	bbAll |= (uint64_t)1 << wk;
+	bbAll |= (uint64_t)1 << bk;
+
+	for (int n = 2; n < nTotal; n++)
+	{
+		auto sq = drawLoc();
+		if ((pieces[n] == W_PAWN || pieces[n] == B_PAWN) && (sq < SQ_A2 || sq > SQ_H7))
+			return false;
+		squares[n] = sq;
+	}
+	return true;
 }
 
 //Create random board
@@ -77,6 +155,24 @@ bool LegalChecker::prepare()
 		auto [wp, bp, wn, bn, wb, bb, wr, br, wq, bq] = lp->drawNumRestricted(kingInPawnSquares);
 		nTotal = wp + bp + wn + bn + wb + bb + wr + br + wq + bq + 2;
 		assert(wp + bp <= 16 && wn + bn <= 4 && wb + bb <= 4 && wr + br <= 4 && wq + bq <= 6);
+		assert(nTotal <= 32);
+
+		addOne(W_PAWN, wp);
+		addOne(B_PAWN, bp);
+		addOne(W_QUEEN, wq);
+		addOne(B_QUEEN, bq);
+		addOne(W_KNIGHT, wn);
+		addOne(B_KNIGHT, bn);
+		addOne(W_BISHOP, wb);
+		addOne(B_BISHOP, bb);
+		addOne(W_ROOK, wr);
+		addOne(B_ROOK, br);
+	}
+	else if (sampleType == ESampleType::VERY_RESTRICTED)
+	{
+		auto [wp, bp, wn, bn, wb, bb, wr, br, wq, bq] = lp->drawNumVeryRestricted(kingInPawnSquares);
+		nTotal = wp + bp + wn + bn + wb + bb + wr + br + wq + bq + 2;
+		assert(wp + bp <= 16 && wn + bn <= 4 && wb + bb <= 4 && wr + br <= 4 && wq + bq <= 2);
 		assert(nTotal <= 32);
 
 		addOne(W_PAWN, wp);
@@ -170,6 +266,7 @@ template bool LegalChecker::prepare<ESampleType::PIECES>();
 template bool LegalChecker::prepare<ESampleType::PIECES_WB>();
 template bool LegalChecker::prepare<ESampleType::WB_RESTRICTED>();
 template bool LegalChecker::prepare<ESampleType::RESTRICTED>();
+template bool LegalChecker::prepare<ESampleType::VERY_RESTRICTED>();
 
 
 void LegalChecker::setKingInfo()
@@ -263,7 +360,7 @@ bool LegalChecker::checkAdditionalConditions(bool underpromotions, int maxQueens
 				}
 			}
 			assert(found == count[p]);
-			if (checkerboard[0] == checkerboard[1])	//can't get two same color square bishops without underpromotions (to minor pieces)
+			if (found>=2 && checkerboard[0] == checkerboard[1])	//can't get two same color square bishops without underpromotions (to minor pieces)
 				return false;
 
 			return true;

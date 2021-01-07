@@ -147,6 +147,24 @@ std::tuple<int, int, int, int, int, int, int, int, int, int> LegalParams::drawNu
 	return std::make_tuple(wp, bp, wn, bn, wb, bb, wr, br, wq, bq);
 }
 
+//Returns [wp, bp, wn, bn, wb, bb, wr, br, wq, bq]
+std::tuple<int, int, int, int, int, int, int, int, int, int> LegalParams::drawNumVeryRestricted(int kingsInPawnSquares) const
+{
+	//Not very efficient but it doesn't matter because random number generation takes up 80% of time
+	int v = pickRandomKnownSum(combsVeryRestricted, combsSumVeryRestricted, combsVeryRestrictedPartialSum);
+	int wp = v / (2 * 2 * 3 * 3 * 3 * 3 * 3 * 3 * 9);
+	int bp = v / (2 * 2 * 3 * 3 * 3 * 3 * 3 * 3) % 9;
+	int wn = v / (2 * 2 * 3 * 3 * 3 * 3 * 3) % 3;
+	int bn = v / (2 * 2 * 3 * 3 * 3 * 3) % 3;
+	int wb = v / (2 * 2 * 3 * 3 * 3) % 3;
+	int bb = v / (2 * 2 * 3 * 3) % 3;
+	int wr = v / (2 * 2 * 3) % 3;
+	int br = v / (2 * 2) % 3;
+	int wq = v / 2 % 2;
+	int bq = v % 2;
+	return std::make_tuple(wp, bp, wn, bn, wb, bb, wr, br, wq, bq);
+}
+
 void LegalParams::setup(int argc, char* argv[], int nthreads)
 {
 	vector<int> slist(omp_get_max_threads());
@@ -204,6 +222,7 @@ void LegalParams::setup(int argc, char* argv[], int nthreads)
 	std::tie(combs, combsPartialSum) = readNumbers("combs.txt", 31);
 	std::tie(combsWB, combsWBPartialSum) = readNumbers("combsWB.txt", 16*16);
 	std::tie(combsRestricted, combsRestrictedPartialSum) = readNumbers("restricted.txt", 944774);
+	std::tie(combsVeryRestricted, combsVeryRestrictedPartialSum) = readNumbers("veryRestricted.txt", 236196);
 
 	combsSum = std::accumulate(combs.begin(), combs.end(), 0.0, fsum);
 	cout << "PIECES Sample out of " << combsSum * 2.0 * KING_COMBINATIONS << " unique possible pseudo-legal positions" << endl;
@@ -213,5 +232,8 @@ void LegalParams::setup(int argc, char* argv[], int nthreads)
 
 	combsSumRestricted = std::accumulate(combsRestricted.begin(), combsRestricted.end(), 0.0, fsum);
 	cout << "RESTRICTED Sample out of " << combsSumRestricted * 2.0 * KING_COMBINATIONS << " unique possible pseudo-legal positions" << endl;
+
+	combsSumVeryRestricted = std::accumulate(combsVeryRestricted.begin(), combsVeryRestricted.end(), 0.0, fsum);
+	cout << "VERY_RESTRICTED Sample out of " << combsSumVeryRestricted * 2.0 * KING_COMBINATIONS << " unique possible pseudo-legal positions" << endl;
 }
 

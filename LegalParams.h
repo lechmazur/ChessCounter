@@ -38,9 +38,9 @@ struct LegalParams
 	int bothInPawnsField = -1;
 	int oneInPawnsField = -1;
 	int noneInPawnsField = -1;
-	std::vector<OneComb> combsRestricted;				
-	std::vector<double> combsRestrictedPartialSum;				
-	double combsSumRestricted = -1;
+	std::vector<OneComb> combsRestricted, combsVeryRestricted;
+	std::vector<double> combsRestrictedPartialSum, combsVeryRestrictedPartialSum;
+	double combsSumRestricted = -1, combsSumVeryRestricted = -1;
 	std::uniform_int_distribution<int> kingLocDistribution;
 	const double kingsMult = 1.0 / KING_COMBINATIONS;
 
@@ -76,5 +76,6 @@ struct LegalParams
 	[[nodiscard]] int drawNumOfPieces() const;	//draw the number of non-king pieces given probabilities
 	[[nodiscard]] std::pair<int, int> drawNumOfWBPieces() const;
 	[[nodiscard]] std::tuple<int, int, int, int, int, int, int, int, int, int> drawNumRestricted(int kingsInPawnSquares) const;
+	[[nodiscard]] std::tuple<int, int, int, int, int, int, int, int, int, int> drawNumVeryRestricted(int kingsInPawnSquares) const;
 };
 

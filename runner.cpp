@@ -4,14 +4,28 @@
 #include <omp.h>
 #include <algorithm>
 #include <chrono>
+#include <fstream>
+#include <string>
 
 using std::vector;
 using std::cout;
 using std::endl;
+using std::string;
 
 
 namespace PSQT {
 void init();
+}
+
+
+
+void Runner::saveFile(string fname, const vector<string>& v)
+{
+	std::ofstream f(fname);
+	for (vector<string>::const_iterator i = v.begin(); i != v.end(); ++i) 
+	{
+		f << *i << '\n';
+	}
 }
 
 
@@ -55,7 +69,7 @@ template<typename TEl>
 }
 
 
-bool checkFromFen(const std::string& fen, LegalParams& lp, bool restricted)
+bool checkFromFen(const string& fen, LegalParams& lp, bool restricted)
 {
 	LegalChecker lc;
 	lc.init(&lp, omp_get_thread_num());
@@ -72,7 +86,7 @@ bool checkFromFen(const std::string& fen, LegalParams& lp, bool restricted)
 
 void validate(LegalParams& lp)
 {
-	vector<std::pair<std::string, bool>> fensR =
+	vector<std::pair<string, bool>> fensR =
 	{
 		{"r3bK2/pPp2R1p/3Ppq1P/3k4/2r2P2/1p1p1PRQ/1Bn2Pp1/BN2Q2N w - - 0 1", false}
 	};
@@ -82,7 +96,7 @@ void validate(LegalParams& lp)
 		assert(checkFromFen(fen, lp, true) == val);
 	}
 
-	vector<std::pair<std::string, bool>> fens =
+	vector<std::pair<string, bool>> fens =
 	{
 		{"1RbqB3/BQ1p3P/rN4N1/Q1pR2R1/n2N2nb/k2q4/2B1rr1P/1rK1rQ2 w - - 0 1", false},
 		{"rnbqkbnr/ppppppp1/8/8/8/6P1/PPPPPPP1/RNBQKBNR b KQkq - 0 2", true},
@@ -112,6 +126,59 @@ void validate(LegalParams& lp)
 	}
 }
 
+
+void Runner::generateFens(int argc, char* argv[])
+{
+	LegalParams lp;
+
+	const int nthreads = std::max(1, omp_get_max_threads() - 1);
+	lp.setup(argc, argv, nthreads);
+	const ESampleType sampleType = ESampleType::VERY_RESTRICTED;
+	const int64_t RUNS = 1'000'000'000'000'000;
+
+	vector<vector<string>> mates(33);
+	for (auto& m : mates)
+		m.reserve(1'000'000);
+
+//#pragma omp parallel for num_threads(nthreads)
+	for (int64_t x = 0; x < RUNS; x++)
+	{
+		int tnum = omp_get_thread_num();
+		LegalChecker lc;
+		lc.init(&lp, tnum);
+		bool cont = lc.prepareMate();
+		if (cont)
+		{
+			lc.createTotalCounts();
+			bool isok = lc.checkConditions();
+
+			if (isok)
+			{
+				bool isokRestricted = lc.checkAdditionalConditions(false, 3, 6);
+				if (isokRestricted || sampleType == ESampleType::PIECES_WB || sampleType == ESampleType::PIECES)
+				{
+					auto [mated, stalemated] = lc.isMatedOrStalemated();
+
+					if (!mated && !stalemated)
+					{
+#pragma omp critical
+						{
+							auto& matesPieces = mates[lc.totalPieces()];
+							matesPieces.emplace_back(lc.fen());
+							matesPieces.emplace_back(std::to_string(-1));
+							if (matesPieces.size() / 2 % 100 == 1)
+							{
+								saveFile("b:/outd/mates7-" + std::to_string(lc.totalPieces()) + ".txt", matesPieces);
+							}
+						}
+					}
+				}
+			}
+
+		}
+	}
+}
+
 void Runner::posEstimate(int argc, char* argv[])
 {
 	LegalParams lp;
@@ -120,7 +187,7 @@ void Runner::posEstimate(int argc, char* argv[])
 	lp.setup(argc, argv, nthreads);
 
 	const int64_t RUNS = 1'000'000'000'000'000;
-	const ESampleType sampleType = ESampleType::PIECES_WB;				//Choose which type of sampling to run
+	const ESampleType sampleType = ESampleType::VERY_RESTRICTED;				//Choose which type of sampling to run
 	cout << endl << "Running ";
 	if (sampleType == ESampleType::PIECES)
 		cout << "PIECES: estimating legal positions from a general case. Slow, used to validate PIECES_WB " << endl;
@@ -129,10 +196,13 @@ void Runner::posEstimate(int argc, char* argv[])
 	else if (sampleType == ESampleType::WB_RESTRICTED)
 		cout << "WB_RESTRICTED: estimating legal positions without underpromotions and with at most 3 queens per side from the search space with white and black pieces chosen separately. Slow, used to validate RESTRICTED" << endl;
 	else if (sampleType == ESampleType::RESTRICTED)
-			cout << "RESTRICTED: estimating legal positions without underpromotions and with at most 3 queens per side" << endl;
-		
+		cout << "RESTRICTED: estimating legal positions without underpromotions and with at most 3 queens per side" << endl;
+	else if (sampleType == ESampleType::VERY_RESTRICTED)
+		cout << "VERY_RESTRICTED: estimating legal positions without underpromotions and with at most 1 queen per side" << endl;
+
 		const double totalPossibilities = (sampleType == ESampleType::PIECES ? lp.combsSum :
-		(sampleType == ESampleType::PIECES_WB || sampleType == ESampleType::WB_RESTRICTED) ? lp.combsSumWB : lp.combsSumRestricted) * 2.0 * lp.KING_COMBINATIONS;	//* 2 because WTM and BTM
+			(sampleType == ESampleType::PIECES_WB || sampleType == ESampleType::WB_RESTRICTED) ? lp.combsSumWB : 
+			(sampleType == ESampleType::RESTRICTED ? lp.combsSumRestricted : lp.combsSumVeryRestricted)) * 2.0 * lp.KING_COMBINATIONS;	//* 2 because WTM and BTM
 
 	vector<int64_t> legal(nthreads, 0), legalRestricted(nthreads, 0), all(nthreads, 0);
 	vector<vector<int64_t>> byCount(nthreads), byCountRestricted(nthreads);
@@ -163,12 +233,16 @@ void Runner::posEstimate(int argc, char* argv[])
 		k.resize(nthreads, 0);
 
 	vector<int64_t> matesCount(nthreads, 0), stalematesCount(nthreads, 0);
-	const int MATE_MOVES = 6;
+	const int MATE_MOVES = 0;
 	vector<vector<int64_t>> matesInCount(MATE_MOVES+1);
 	for (auto& m : matesInCount)
 		m.resize(nthreads, 0);
 
 	auto start = std::chrono::steady_clock::now();
+	vector<vector<string>> mates(33);
+	for (auto& m : mates)
+		m.reserve(1'000'000);
+	const bool SAVE_MATES = true;
 
 #pragma omp parallel for num_threads(nthreads)
 	for (int64_t x = 0; x < RUNS; x++)
@@ -216,34 +290,55 @@ void Runner::posEstimate(int argc, char* argv[])
 					byCountRestricted[tnum][lc.totalPieces()] += countAs;
 				}
 
-#pragma omp critical
-				{
-					//cout << tnum << "    " << lc.fen() << endl;
-				}
-				auto [mated, stalemated] = lc.isMatedOrStalemated();
-				if (mated)
-					matesCount[tnum]++;
-				else if (stalemated)
-					stalematesCount[tnum]++;
 
-				for (int m=1; m<=MATE_MOVES; m++)
+				if (isokRestricted || sampleType == ESampleType::PIECES_WB || sampleType == ESampleType::PIECES)
 				{
-					auto matedInM = lc.isMate(m, false);
-					if (matedInM)
+					auto [mated, stalemated] = lc.isMatedOrStalemated();
+					if (mated)
+						matesCount[tnum]++;
+					else if (stalemated)
+						stalematesCount[tnum]++;
+
+					if (!mated && !stalemated)
 					{
-						matesInCount[m][tnum]++;
-						break;
-					}
-				}
-
 #pragma omp critical
-				{
-					//cout << tnum << "-----" << lc.fen() << endl;
+						{
+							auto& matesPieces = mates[lc.totalPieces()];
+							matesPieces.emplace_back(lc.fen());
+							matesPieces.emplace_back(std::to_string(-1));
+							if (matesPieces.size() / 2 % 100 == 1)
+							{
+								saveFile("b:/outd/mates-"+std::to_string(lc.totalPieces())+".txt", matesPieces);
+							}
+						}
+					}
+					/*
+					for (int m = 1; m <= MATE_MOVES; m++)
+					{
+						auto matedInM = lc.isMate(m, false);
+						if (matedInM)
+						{
+							if (m >= 2 && SAVE_MATES)
+							{
+#pragma omp critical
+								{
+									mates.emplace_back(lc.fen());
+									mates.emplace_back(std::to_string(m));
+									//if (mates.size() / 2 % 10 == 1)
+									{
+										saveFile("b:/outd/mates.txt", mates);
+									}
+								}
+							}
+							matesInCount[m][tnum]++;
+							break;
+						}
+					}
+					*/
 				}
-
 			}
 
-			if (all[tnum] % (1024 * 1024) == (1024 * 1024 * tnum / nthreads))
+			if (all[tnum] % (128 * 128) == (128 * 128 * tnum / nthreads))
 			{
 #pragma omp critical
 				{
@@ -252,6 +347,11 @@ void Runner::posEstimate(int argc, char* argv[])
 					auto totalAny = vectorSum(all);
 					std::chrono::duration<double> elapsedSeconds = std::chrono::steady_clock::now() - start;
 					cout << "Per second: " << totalAny / elapsedSeconds.count();
+
+					if (sampleType == ESampleType::VERY_RESTRICTED)
+						cout << "  legal_very_restricted: " << totalGoodRestricted << " / all: " << totalAny << "  estimate restricted: "
+						<< (double)totalGoodRestricted / totalAny * totalPossibilities << endl;
+
 					if (sampleType == ESampleType::RESTRICTED || sampleType == ESampleType::WB_RESTRICTED)
 						cout << "  legal_restricted: " << totalGoodRestricted << " / all: " << totalAny << "  estimate restricted: "
 						<< (double)totalGoodRestricted / totalAny * totalPossibilities << endl;
@@ -277,13 +377,15 @@ void Runner::posEstimate(int argc, char* argv[])
 
 							if (sampleType == ESampleType::PIECES_WB || sampleType == ESampleType::PIECES)
 								cout << "legal = " << s << endl;
-							else
+							else if (sampleType == ESampleType::RESTRICTED)
 								cout << "legal restricted = " << sRestricted << endl;
+							else
+								cout << "legal very restricted = " << sRestricted << endl;
 						}
 
 						for (Piece p = W_PAWN; p <= B_KING; ++p)
 						{
-							std::string s = color_of(p) ? "White " : "Black ";
+							string s = color_of(p) ? "White " : "Black ";
 							auto pt = type_of(p);
 							if (pt == PAWN || pt == BISHOP || pt == KNIGHT || pt == ROOK || pt == QUEEN)
 							{

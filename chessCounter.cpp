@@ -16,6 +16,7 @@ int main(int argc, char* argv[])
 	omp_set_nested(2);
 	Runner runner;
 	runner.init();
+	//runner.generateFens(argc, argv);
 	runner.posEstimate(argc, argv);
 
 	Threads.set(0);

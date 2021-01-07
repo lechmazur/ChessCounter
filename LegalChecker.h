@@ -7,7 +7,8 @@ enum class ESampleType {
 	PIECES,					//Most general case, kings in 3612 possible locations, up to 30 pieces picked 
 	PIECES_WB,				//White and black pieces picked separately
 	WB_RESTRICTED,			//White and black pieces picked separately, slowly calculates restricted case. For validation
-	RESTRICTED				//Restricted case: no underpromotions, at most 3 queens per side
+	RESTRICTED,				//Restricted case: no underpromotions, at most 3 queens per side
+	VERY_RESTRICTED		//Restricted case: no underpromotions, at most 1 queen per side
 };
 
 struct LegalParams;
@@ -34,24 +35,24 @@ struct Attacker
 class LegalChecker
 {
 private:
-	std::array<Square, 32> squares;	//Piece locations (including empty)
-	std::array<Piece, 32> pieces;		//What pieces are there
-	Square wk = SQUARE_NB;				//White king location
-	Square bk = SQUARE_NB;				//Black king location
+	std::array<Square, 32> squares;				//Piece locations (including empty)
+	std::array<Piece, 32> pieces;					//What pieces are there
+	Square wk = SQUARE_NB;							//White king location
+	Square bk = SQUARE_NB;							//Black king location
 	LegalParams* lp = nullptr;
-	std::array<int, PIECE_NB> count;	//Count of each piece type
-	std::array<int, PIECE_NB> maxcount;	//Max number of each piece types for restricted case
-	Position posWTM;						//White-to-move position for SF
-	Position posBTM;						//Black-to-move position for SF
-	int threadNum = -1;					//Current thread number
-	int nTotal = -1;						//Total number of pieces
-	int nWhite = -1;						//Number of white pieces
-	int nBlack = -1;						//Number of black pieces
-	File wkFile = FILE_NB;				//White king file
-	Rank wkRank = RANK_NB;				//White king rank
-	uint64_t wkBit = 0;					//Bit where white king is
-	int kingInPawnSquares = -1;		//How many kings there are in pawn squares
-	int nattacks = -1;						//How many black pieces check white king
+	std::array<int, PIECE_NB> count;				//Count of each piece type
+	std::array<int, PIECE_NB> maxcount;			//Max number of each piece types for restricted case
+	Position posWTM;									//White-to-move position for SF
+	Position posBTM;									//Black-to-move position for SF
+	int threadNum = -1;								//Current thread number
+	int nTotal = -1;									//Total number of pieces
+	int nWhite = -1;									//Number of white pieces
+	int nBlack = -1;									//Number of black pieces
+	File wkFile = FILE_NB;							//White king file
+	Rank wkRank = RANK_NB;							//White king rank
+	uint64_t wkBit = 0;								//Bit where white king is
+	int kingInPawnSquares = -1;					//How many kings there are in pawn squares
+	int nattacks = -1;								//How many black pieces check white king
 	std::array<File, 14> preEnpassantsFrom;	//Black's previous possible en-passants (from)
 	std::array<File, 14> preEnpassantsTo;		//Black's previous possible en-passants (to)
 	int prevEPCount = -1;							//Count of black's previous possible en-passants
@@ -62,6 +63,7 @@ public:
 	[[nodiscard]] std::pair<Square, Square> getKings() const;
 	[[nodiscard]] const std::array<int, PIECE_NB>& getCount() const;
 	void init(LegalParams* lpIn, int tnum);
+	bool prepareMate();
 	template<ESampleType sampleType>
 	bool prepare();
 	void setKingInfo();
