@@ -67,9 +67,9 @@ The following rules for determining if a position is legal are used (white-to-mo
 
 Upper bound estimate of possible legal chess position (counts en passant, castling, sides to move, allows underpromotions): **8.7E+45**.
 
-The highest estimate of "realistic" possible legal chess position (counts en passant, castling, sides to move) with at most 3 queens per side (6 total) and without underpromotions as calculated by the program: **6.4E+41**.
+The highest estimate of "realistic" possible legal chess position (counts en passant, castling, sides to move) with at most 3 queens per side (6 total) and without underpromotions as calculated by the program: **6.6E+41**.
 
-6 queens on the board has occurred a few times in real games, so going below this is very limiting but we can also calculate that with no underpromotions and at most one queen per side there are around **8.2E+38 positions**.
+6 queens on the board has occurred a few times in real games, so going below this is very limiting but we can also calculate that with no underpromotions and at most one queen per side there are around **8.3E+38 positions**.
 
 
 ## Additional Stats
