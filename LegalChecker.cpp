@@ -57,7 +57,7 @@ void LegalChecker::init(LegalParams* lpIn, int tnum)
 }
 
 
-//Create random board
+//Create random board for mates
 bool LegalChecker::prepareMate()
 {
 	resetArr(count);
@@ -72,13 +72,14 @@ bool LegalChecker::prepareMate()
 		}
 	};
 
+
 	int wp = 0;
 	int bp = 0;
 	int wn = 1;
 	int bn = 1;
 	int wq = 0;
 	int bq = 0;
-	int wb = 0;
+	int wb = 1;
 	int bb = 0;
 	int wr = 1;
 	int br = 1;
@@ -96,6 +97,69 @@ bool LegalChecker::prepareMate()
 	addOne(B_BISHOP, bb);
 	addOne(W_ROOK, wr);
 	addOne(B_ROOK, br);
+
+	Bitboard bbAll = 0;
+
+	auto drawLoc = [&]()
+	{
+		int rLoc = -1;
+		do
+		{
+			rLoc = lp->intRand(int(SQ_A1), int(SQ_H8), threadNum);
+		} while ((bbAll & ((uint64_t)1 << rLoc)) != 0);
+		bbAll |= (uint64_t)1 << rLoc;
+		return Square(rLoc);
+	};
+
+	int idx = lp->intRand(threadNum, lp->kingLocDistribution);
+	wk = lp->whiteKingLocs[idx];
+	bk = lp->blackKingLocs[idx];
+
+	squares[0] = wk;
+	squares[1] = bk;
+	pieces[0] = W_KING;
+	pieces[1] = B_KING;
+	setKingInfo();
+
+	bbAll |= (uint64_t)1 << wk;
+	bbAll |= (uint64_t)1 << bk;
+
+	for (int n = 2; n < nTotal; n++)
+	{
+		auto sq = drawLoc();
+		if ((pieces[n] == W_PAWN || pieces[n] == B_PAWN) && (sq < SQ_A2 || sq > SQ_H7))
+			return false;
+		squares[n] = sq;
+	}
+	return true;
+}
+
+
+//Create random board for mates with a variety of configs
+bool LegalChecker::prepareMateVarious()
+{
+	resetArr(count);
+	int n = 2;
+	nTotal = lp->intRand(8, 32, threadNum);
+
+	for (int c=0; c< nTotal; c++)
+	{
+		int ptn = -1;
+		if (lp->intRand(0, 1000, threadNum) == 0)
+			ptn = lp->pickRandomKnownSum(lp->combsNormalExt, lp->partialNormalExt.back(), lp->partialNormalExt);
+		else
+			ptn = lp->pickRandomKnownSum(lp->combsNormal, lp->partialNormal.back(), lp->partialNormal);
+		Color col = Color(lp->intRand(0, 1, threadNum));
+		Piece p = col == WHITE ? Piece(int(W_PAWN) + ptn) : Piece(int(B_PAWN) + ptn);
+		count[p]++;
+		pieces[n++] = p;
+	}
+
+	createTotalCounts();
+	if (nWhite > 16 || nBlack > 16)
+		return false;
+
+	
 
 	Bitboard bbAll = 0;
 
@@ -647,6 +711,33 @@ bool LegalChecker::checkPawnStructures() const
 	//...
 	//6k1/8/8/8/P7/PP6/2P5/6K1 w - - 0 8
 	if (!pawnStructureOk({ SQ_A4, SQ_A3, SQ_B3, SQ_C2 }, W_PAWN))
+		return false;
+
+	//...
+	//P..
+	//P..
+	//.PP
+	//...
+	//4k3/8/8/8/P7/P7/1PP5/4K3 w - - 0 2
+	if (!pawnStructureOk({ SQ_A4, SQ_A3, SQ_B2, SQ_C2 }, W_PAWN))
+		return false;
+
+	//...
+	//P..
+	//PP.
+	//P..
+	//...
+	//4k3/8/8/8/P7/PP6/P7/4K3 w - - 0 2
+	if (!pawnStructureOk({ SQ_A4, SQ_A3, SQ_A2, SQ_B3 }, W_PAWN))
+		return false;
+
+	//...
+	//P..
+	//.P.
+	//PP.
+	//...
+	//4k3/8/8/8/P7/1P6/PP6/4K3 w - - 0 2
+	if (!pawnStructureOk({ SQ_A4, SQ_A2, SQ_B2, SQ_B3 }, W_PAWN))
 		return false;
 
 

@@ -43,6 +43,11 @@ struct LegalParams
 	double combsSumRestricted = -1, combsSumVeryRestricted = -1;
 	std::uniform_int_distribution<int> kingLocDistribution;
 	const double kingsMult = 1.0 / KING_COMBINATIONS;
+	std::vector<double> partialNormal;
+	std::vector<OneComb> combsNormal;
+	std::vector<double> partialNormalExt;
+	std::vector<OneComb> combsNormalExt;
+
 
 	template<typename Treal> 
 	[[nodiscard]] Treal realRand(Treal minv, Treal maxv) const;
@@ -77,5 +82,6 @@ struct LegalParams
 	[[nodiscard]] std::pair<int, int> drawNumOfWBPieces() const;
 	[[nodiscard]] std::tuple<int, int, int, int, int, int, int, int, int, int> drawNumRestricted(int kingsInPawnSquares) const;
 	[[nodiscard]] std::tuple<int, int, int, int, int, int, int, int, int, int> drawNumVeryRestricted(int kingsInPawnSquares) const;
+	void makePartialNormal();
 };
 

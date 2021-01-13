@@ -109,7 +109,6 @@ int LegalParams::pickRandomKnownSum(const vector<OneComb>& probs, double sum, co
 	auto rv = realRand(0.0, sum);
 	double tot = 0;
 
-
 	auto lower = std::lower_bound(partialSums.begin(), partialSums.end(), rv);
 	assert(lower != partialSums.end());
 	auto q = std::max(0, int(std::distance(partialSums.begin(), lower) - 1));
@@ -167,7 +166,7 @@ std::tuple<int, int, int, int, int, int, int, int, int, int> LegalParams::drawNu
 
 void LegalParams::setup(int argc, char* argv[], int nthreads)
 {
-	vector<int> slist(omp_get_max_threads());
+	vector<int> slist(omp_get_max_threads(), 88960267);
 	vector<uint32_t> seeds(slist.size());
 	std::seed_seq seq(slist.begin(), slist.end());
 	seq.generate(seeds.begin(), seeds.end());
@@ -183,6 +182,7 @@ void LegalParams::setup(int argc, char* argv[], int nthreads)
 		s = std::make_unique<std::deque<StateInfo>>(1);
 	setupSF(argc, argv);
 	setupKingLocations();
+	makePartialNormal();
 
 	kingLocDistribution = std::uniform_int_distribution<int>(0, int(whiteKingLocs.size() - 1));
 
@@ -235,5 +235,41 @@ void LegalParams::setup(int argc, char* argv[], int nthreads)
 
 	combsSumVeryRestricted = std::accumulate(combsVeryRestricted.begin(), combsVeryRestricted.end(), 0.0, fsum);
 	cout << "VERY_RESTRICTED Sample out of " << combsSumVeryRestricted * 2.0 * KING_COMBINATIONS << " unique possible pseudo-legal positions" << endl;
+}
+
+void LegalParams::makePartialNormal()
+{
+	combsNormal.resize(5);
+	combsNormal[0].idx = 0;
+	combsNormal[0].val = 8;
+	combsNormal[1].idx = 1;
+	combsNormal[1].val = 2;
+	combsNormal[2].idx = 2;
+	combsNormal[2].val = 2;
+	combsNormal[3].idx = 3;
+	combsNormal[3].val = 2;
+	combsNormal[4].idx = 4;
+	combsNormal[4].val = 1;
+	partialNormal.resize(combsNormal.size() + 1);
+
+	double sum = 0;
+	for (int q = 0; q < combsNormal.size(); q++)
+	{
+		partialNormal[q] = sum;
+		sum += combsNormal[q].val;
+	}
+	partialNormal[combsNormal.size()] = sum;
+
+
+	combsNormalExt = combsNormal;
+	combsNormalExt[4].val = 2;
+	partialNormalExt.resize(combsNormalExt.size() + 1);
+	sum = 0;
+	for (int q = 0; q < 5; q++)
+	{
+		partialNormalExt[q] = sum;
+		sum += combsNormalExt[q].val;
+	}
+	partialNormalExt[combsNormalExt.size()] = sum;
 }
 

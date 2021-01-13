@@ -9,6 +9,7 @@
 #include "uci.h"
 #include "syzygy/tbprobe.h"
 #include "OpeningLimit.h"
+#include "LegalChecker.h"
 
 
 class Runner
@@ -20,6 +21,7 @@ public:
 	void saveFile(std::string fname, const std::vector<std::string>& v);
 	void init();
 	void generateFens(int argc, char* argv[]);
+	template<ESampleType sampleType>
 	void posEstimate(int argc, char* argv[]);
 };
 

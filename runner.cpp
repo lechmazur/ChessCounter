@@ -98,6 +98,13 @@ void validate(LegalParams& lp)
 
 	vector<std::pair<string, bool>> fens =
 	{
+		{"4k3/8/8/8/P7/1P6/1PP5/4K3 w - - 0 2", false},
+		{"4k3/8/8/8/P7/1P6/PP6/4K3 w - - 0 2", false},
+		{"4k3/8/8/8/P7/PP6/P7/4K3 w - - 0 2", false},
+		{"4k3/8/8/8/P7/P7/1PP5/4K3 w - - 0 2", false},
+		{"4k3/8/8/8/7P/8/5PPP/4K3 w - - 0 2", false},
+		{"4k3/8/8/8/7P/7P/5PP1/4K3 w - - 0 2", false},
+		{"b7/1p2k3/8/8/8/8/8/4K3 w - - 0 2", false},
 		{"1RbqB3/BQ1p3P/rN4N1/Q1pR2R1/n2N2nb/k2q4/2B1rr1P/1rK1rQ2 w - - 0 1", false},
 		{"rnbqkbnr/ppppppp1/8/8/8/6P1/PPPPPPP1/RNBQKBNR b KQkq - 0 2", true},
 		{"rnbqkb1r/ppppppp1/8/7P/7p/8/PPPPPP1P/RNBQKBNR w KQkq - 0 2", true},
@@ -131,22 +138,27 @@ void Runner::generateFens(int argc, char* argv[])
 {
 	LegalParams lp;
 
-	const int nthreads = std::max(1, omp_get_max_threads() - 1);
+	//const int nthreads = std::max(1, omp_get_max_threads() - 1);
+	const int nthreads = 20;
 	lp.setup(argc, argv, nthreads);
 	const ESampleType sampleType = ESampleType::VERY_RESTRICTED;
 	const int64_t RUNS = 1'000'000'000'000'000;
 
-	vector<vector<string>> mates(33);
+	vector<vector<string>> mates(nthreads);
 	for (auto& m : mates)
-		m.reserve(1'000'000);
+		m.reserve(30'000'000);
 
-//#pragma omp parallel for num_threads(nthreads)
+	int64_t added = 0;
+	auto start = std::chrono::steady_clock::now();
+
+
+#pragma omp parallel for num_threads(nthreads)
 	for (int64_t x = 0; x < RUNS; x++)
 	{
 		int tnum = omp_get_thread_num();
 		LegalChecker lc;
 		lc.init(&lp, tnum);
-		bool cont = lc.prepareMate();
+		bool cont = lc.prepareMateVarious();
 		if (cont)
 		{
 			lc.createTotalCounts();
@@ -157,19 +169,26 @@ void Runner::generateFens(int argc, char* argv[])
 				bool isokRestricted = lc.checkAdditionalConditions(false, 3, 6);
 				if (isokRestricted || sampleType == ESampleType::PIECES_WB || sampleType == ESampleType::PIECES)
 				{
-					auto [mated, stalemated] = lc.isMatedOrStalemated();
-
-					if (!mated && !stalemated)
+					auto& matesOneVec = mates[tnum];
+					matesOneVec.emplace_back(lc.fen());
+#pragma omp atomic
+					added++;
+					if (added % (2048*1024) == 1)
 					{
 #pragma omp critical
 						{
-							auto& matesPieces = mates[lc.totalPieces()];
-							matesPieces.emplace_back(lc.fen());
-							matesPieces.emplace_back(std::to_string(-1));
-							if (matesPieces.size() / 2 % 100 == 1)
+							std::chrono::duration<double> elapsedSeconds = std::chrono::steady_clock::now() - start;
+							cout << "Speed: " << added / elapsedSeconds.count() << endl;
+
+							vector<string> all;
+							all.reserve(added);
+							for (int t=0; t<nthreads; t++)
 							{
-								saveFile("b:/outd/mates7-" + std::to_string(lc.totalPieces()) + ".txt", matesPieces);
+								for (int64_t q = 0; q < (int64_t)mates[t].size(); q++)
+									all.emplace_back(mates[t][q]);
 							}
+							saveFile("b:/outd/mates-various11.txt", all);
+							cout << added << endl;
 						}
 					}
 				}
@@ -179,6 +198,8 @@ void Runner::generateFens(int argc, char* argv[])
 	}
 }
 
+
+template<ESampleType sampleType>
 void Runner::posEstimate(int argc, char* argv[])
 {
 	LegalParams lp;
@@ -187,7 +208,6 @@ void Runner::posEstimate(int argc, char* argv[])
 	lp.setup(argc, argv, nthreads);
 
 	const int64_t RUNS = 1'000'000'000'000'000;
-	const ESampleType sampleType = ESampleType::VERY_RESTRICTED;				//Choose which type of sampling to run
 	cout << endl << "Running ";
 	if (sampleType == ESampleType::PIECES)
 		cout << "PIECES: estimating legal positions from a general case. Slow, used to validate PIECES_WB " << endl;
@@ -231,12 +251,6 @@ void Runner::posEstimate(int argc, char* argv[])
 	vector<vector<int64_t>> kingIn(3);
 	for (auto& k : kingIn)
 		k.resize(nthreads, 0);
-
-	vector<int64_t> matesCount(nthreads, 0), stalematesCount(nthreads, 0);
-	const int MATE_MOVES = 0;
-	vector<vector<int64_t>> matesInCount(MATE_MOVES+1);
-	for (auto& m : matesInCount)
-		m.resize(nthreads, 0);
 
 	auto start = std::chrono::steady_clock::now();
 	vector<vector<string>> mates(33);
@@ -289,56 +303,9 @@ void Runner::posEstimate(int argc, char* argv[])
 					legalRestricted[tnum] += countAs;
 					byCountRestricted[tnum][lc.totalPieces()] += countAs;
 				}
-
-
-				if (isokRestricted || sampleType == ESampleType::PIECES_WB || sampleType == ESampleType::PIECES)
-				{
-					auto [mated, stalemated] = lc.isMatedOrStalemated();
-					if (mated)
-						matesCount[tnum]++;
-					else if (stalemated)
-						stalematesCount[tnum]++;
-
-					if (!mated && !stalemated)
-					{
-#pragma omp critical
-						{
-							auto& matesPieces = mates[lc.totalPieces()];
-							matesPieces.emplace_back(lc.fen());
-							matesPieces.emplace_back(std::to_string(-1));
-							if (matesPieces.size() / 2 % 100 == 1)
-							{
-								saveFile("b:/outd/mates-"+std::to_string(lc.totalPieces())+".txt", matesPieces);
-							}
-						}
-					}
-					/*
-					for (int m = 1; m <= MATE_MOVES; m++)
-					{
-						auto matedInM = lc.isMate(m, false);
-						if (matedInM)
-						{
-							if (m >= 2 && SAVE_MATES)
-							{
-#pragma omp critical
-								{
-									mates.emplace_back(lc.fen());
-									mates.emplace_back(std::to_string(m));
-									//if (mates.size() / 2 % 10 == 1)
-									{
-										saveFile("b:/outd/mates.txt", mates);
-									}
-								}
-							}
-							matesInCount[m][tnum]++;
-							break;
-						}
-					}
-					*/
-				}
 			}
 
-			if (all[tnum] % (128 * 128) == (128 * 128 * tnum / nthreads))
+			if (all[tnum] % (2048 * 1024) == (2048 * 1024 * tnum / nthreads))
 			{
 #pragma omp critical
 				{
@@ -419,16 +386,6 @@ void Runner::posEstimate(int argc, char* argv[])
 							c++;
 						}
 
-						auto matedTotal = vectorSum(matesCount);
-						auto stalematedTotal = vectorSum(stalematesCount);
-						cout << "Mated: " << matedTotal << " / " << totalGood << "    " << (double)matedTotal / totalGood << "   estimate = " << (double)matedTotal / totalAny * totalPossibilities <<  endl;
-						cout << "Stalemated: " << stalematedTotal << " / " << totalGood << "    " << (double)stalematedTotal / totalGood << "   estimate = " << (double)stalematedTotal / totalAny * totalPossibilities << endl;
-
-						for (int m = 1; m <= MATE_MOVES; m++)
-						{
-							auto matesTotal = vectorSum(matesInCount[m]);
-							cout << "Mates in " << m << ": " << matesTotal << " / " << totalGood << "    " << (double)matesTotal / totalGood << "   estimate = " << (double)matesTotal / totalAny * totalPossibilities << endl;
-						}
 					}
 				}
 			}
@@ -436,3 +393,9 @@ void Runner::posEstimate(int argc, char* argv[])
 	}
 }
 
+
+template void Runner::posEstimate<ESampleType::PIECES>(int argc, char* argv[]);
+template void Runner::posEstimate<ESampleType::PIECES_WB>(int argc, char* argv[]);
+template void Runner::posEstimate<ESampleType::RESTRICTED>(int argc, char* argv[]);
+template void Runner::posEstimate<ESampleType::VERY_RESTRICTED>(int argc, char* argv[]);
+template void Runner::posEstimate<ESampleType::WB_RESTRICTED>(int argc, char* argv[]);

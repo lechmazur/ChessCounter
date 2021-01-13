@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 	Runner runner;
 	runner.init();
 	//runner.generateFens(argc, argv);
-	runner.posEstimate(argc, argv);
+	runner.posEstimate<ESampleType::RESTRICTED>(argc, argv);
 
 	Threads.set(0);
 }

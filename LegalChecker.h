@@ -64,6 +64,7 @@ public:
 	[[nodiscard]] const std::array<int, PIECE_NB>& getCount() const;
 	void init(LegalParams* lpIn, int tnum);
 	bool prepareMate();
+	bool prepareMateVarious();
 	template<ESampleType sampleType>
 	bool prepare();
 	void setKingInfo();
