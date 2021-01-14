@@ -40,7 +40,7 @@ The following rules for determining if a position is legal are used (white-to-mo
 
 8. Various pawn structures are impossible from the starting chess position, especially on the sides. For example, white pawns at a2, b2, a3, white pawns at a2, a3, c2, a4, white pawns at a3, a4, b3, c2, white pawns at b2, c2, d2, c3, etc.
 
-9. Each extra pawn on the same file means the opposite-side piece was captured. E.g. if there are white pawns at d2, d4, and d6, it means that at least two black pieces or pawns were captured.
+9. Each extra pawn on the same file means the opposite-side piece was captured. E.g. if there are white pawns at d2, d4, and d6, it means that at least two black pieces or pawns were captured. Some positions would require two captures, such as white pawns on a2, a4, and b2.
 
 10. If the white pawn is on the same file as the black pawn and it's above it, this means that there was a capture. E.g. white pawn at c7 and a black pawn at c4.
 
