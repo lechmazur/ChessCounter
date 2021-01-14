@@ -20,7 +20,7 @@ private:
 public:
 	void saveFile(std::string fname, const std::vector<std::string>& v);
 	void init();
-	void generateFens(int argc, char* argv[]);
+	void generateFens(int argc, char* argv[], std::string fname);
 	template<ESampleType sampleType>
 	void posEstimate(int argc, char* argv[]);
 };

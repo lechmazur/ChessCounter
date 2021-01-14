@@ -98,6 +98,7 @@ void validate(LegalParams& lp)
 
 	vector<std::pair<string, bool>> fens =
 	{
+		{"rnbqkbnr/ppppppp1/8/8/P7/8/PP6/4K3 w kq - 0 2", false},
 		{"4k3/8/8/8/8/4PP2/3PP1P1/4K3 w - - 0 2", false},
 		{"4k3/8/8/8/8/4PP2/3P1PP1/4K3 w - - 0 2", false},
 		{"4k3/8/8/8/P7/1P6/1PP5/4K3 w - - 0 2", false},
@@ -136,7 +137,7 @@ void validate(LegalParams& lp)
 }
 
 
-void Runner::generateFens(int argc, char* argv[])
+void Runner::generateFens(int argc, char* argv[], string fname)
 {
 	LegalParams lp;
 
@@ -189,13 +190,12 @@ void Runner::generateFens(int argc, char* argv[])
 								for (int64_t q = 0; q < (int64_t)mates[t].size(); q++)
 									all.emplace_back(mates[t][q]);
 							}
-							saveFile("b:/outd/mates-various12.txt", all);
+							saveFile(fname, all);
 							cout << added << endl;
 						}
 					}
 				}
 			}
-
 		}
 	}
 }

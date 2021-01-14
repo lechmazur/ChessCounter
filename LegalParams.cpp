@@ -166,7 +166,7 @@ std::tuple<int, int, int, int, int, int, int, int, int, int> LegalParams::drawNu
 
 void LegalParams::setup(int argc, char* argv[], int nthreads)
 {
-	vector<int> slist(omp_get_max_threads(), 88960267);
+	vector<int> slist(omp_get_max_threads(), 12941865);
 	vector<uint32_t> seeds(slist.size());
 	std::seed_seq seq(slist.begin(), slist.end());
 	seq.generate(seeds.begin(), seeds.end());

@@ -77,8 +77,10 @@ public:
 	void createTotalCounts();
 	void setSFPositions();
 	[[nodiscard]] Piece pieceOn(Square sq) const;
+	[[nodiscard]] bool checkPieces(const std::vector<std::pair<Square, Piece>>& pieces) const;
 	[[nodiscard]] Piece pieceFR(File f, Rank r) const;
 	[[nodiscard]] bool checkBishops() const;
+	[[nodiscard]] bool pawnStructureOk(const std::vector<Square>& plist, Piece p) const;
 	[[nodiscard]] bool checkPawnStructures() const;
 	[[nodiscard]] bool checkSameFileAndCounts() const;
 	[[nodiscard]] int countEnPassantPossibilities() const;

@@ -543,6 +543,15 @@ Piece LegalChecker::pieceOn(Square sq) const
 }
 
 
+bool LegalChecker::checkPieces(const std::vector<std::pair<Square, Piece>>& psq) const
+{
+	for (auto p : psq)
+		if (pieceOn(p.first) != p.second)
+			return false;
+	return true;
+}
+
+
 Piece LegalChecker::pieceFR(File f, Rank r) const
 {
 	return pieceOn(make_square(f, r));
@@ -605,41 +614,42 @@ bool LegalChecker::checkBishops() const
 }
 
 
+bool LegalChecker::pawnStructureOk(const std::vector<Square>& plist, Piece p) const
+{
+	//4 total flips
+	bool all = true;
+	for (Square s : plist)
+		if (pieceOn(s) != p)
+			all = false;
+	if (all)
+		return false;
+
+	all = true;
+	for (Square s : plist)
+		if (pieceOn(flip_file(s)) != p)
+			all = false;
+	if (all)
+		return false;
+
+	all = true;
+	for (Square s : plist)
+		if (pieceOn(flip_rank(s)) != ~p)
+			all = false;
+	if (all)
+		return false;
+
+	all = true;
+	for (Square s : plist)
+		if (pieceOn(flip_file(flip_rank(s))) != ~p)
+			all = false;
+	if (all)
+		return false;
+	return true;
+};
+
+
 bool LegalChecker::checkPawnStructures() const
 {
-	auto pawnStructureOk = [&](const std::vector<Square>& plist, Piece p)
-	{
-		//4 total flips
-		bool all = true;
-		for (Square s : plist)
-			if (pieceOn(s) != p)
-				all = false;
-		if (all)
-			return false;
-
-		all = true;
-		for (Square s : plist)
-			if (pieceOn(flip_file(s)) != p)
-				all = false;
-		if (all)
-			return false;
-
-
-		all = true;
-		for (Square s : plist)
-			if (pieceOn(flip_rank(s)) != ~p)
-				all = false;
-		if (all)
-			return false;
-
-		all = true;
-		for (Square s : plist)
-			if (pieceOn(flip_file(flip_rank(s))) != ~p)
-				all = false;
-		if (all)
-			return false;
-		return true;
-	};
 
 	//Impossible pawn structures on the sides
 	//...
@@ -772,20 +782,14 @@ bool LegalChecker::checkPawnStructures() const
 			&& pieceFR(File(c + 1), RANK_2) == W_PAWN
 			&& pieceFR(File(c + 1), RANK_3) == W_PAWN
 			&& pieceFR(File(c + 2), RANK_2) == W_PAWN)
-		{
-			cout << fen() << endl;
 			return false;
-		}
 
 		if (pieceFR(c, RANK_6) == B_PAWN
 			&& pieceFR(File(c - 1), RANK_7) == B_PAWN
 			&& pieceFR(File(c + 1), RANK_7) == B_PAWN
 			&& pieceFR(File(c + 1), RANK_6) == B_PAWN
 			&& pieceFR(File(c + 2), RANK_7) == B_PAWN)
-		{
-			cout << fen() << endl;
 			return false;
-		}
 
 		//Detect these impossible pawn structures:
 		//  PP      
@@ -797,20 +801,14 @@ bool LegalChecker::checkPawnStructures() const
 			&& pieceFR(c, RANK_2) == W_PAWN
 			&& pieceFR(File(c + 1), RANK_3) == W_PAWN
 			&& pieceFR(File(c + 2), RANK_2) == W_PAWN)
-		{
-			cout << fen() << endl;
 			return false;
-		}
 
 		if (pieceFR(c, RANK_6) == B_PAWN
 			&& pieceFR(File(c - 1), RANK_7) == B_PAWN
 			&& pieceFR(c, RANK_7) == B_PAWN
 			&& pieceFR(File(c + 1), RANK_6) == B_PAWN
 			&& pieceFR(File(c + 2), RANK_7) == B_PAWN)
-		{
-			cout << fen() << endl;
 			return false;
-		}
 	}
 
 	return true;
@@ -887,6 +885,20 @@ bool LegalChecker::checkSameFileAndCounts() const
 		return false;
 
 	if (nTotal + fileChangers > 32)
+		return false;
+
+	//rnbqkbnr/ppppppp1/8/8/P7/8/PP6/4K3 w kq - 0 2
+	//a4 pawn must have captured 2 black pieces so it counts as 2 instead of the usual 1
+	if (checkPieces({ {SQ_A2, W_PAWN}, {SQ_A4, W_PAWN}, {SQ_B2, W_PAWN} }) && nBlack + sameColW + 1 > 16)
+		return false;
+
+	if (checkPieces({ {SQ_H2, W_PAWN}, {SQ_H4, W_PAWN}, {SQ_G2, W_PAWN} }) && nBlack + sameColW + 1 > 16)
+		return false;
+
+	if (checkPieces({ {SQ_A7, B_PAWN}, {SQ_A5, B_PAWN}, {SQ_B7, B_PAWN} }) && nWhite + sameColB + 1 > 16)
+		return false;
+
+	if (checkPieces({ {SQ_H7, B_PAWN}, {SQ_H5, B_PAWN}, {SQ_G7, B_PAWN} }) && nWhite + sameColB + 1 > 16)
 		return false;
 
 	return true;
