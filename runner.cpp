@@ -98,6 +98,8 @@ void validate(LegalParams& lp)
 
 	vector<std::pair<string, bool>> fens =
 	{
+		{"4k3/8/8/8/8/4PP2/3PP1P1/4K3 w - - 0 2", false},
+		{"4k3/8/8/8/8/4PP2/3P1PP1/4K3 w - - 0 2", false},
 		{"4k3/8/8/8/P7/1P6/1PP5/4K3 w - - 0 2", false},
 		{"4k3/8/8/8/P7/1P6/PP6/4K3 w - - 0 2", false},
 		{"4k3/8/8/8/P7/PP6/P7/4K3 w - - 0 2", false},
@@ -187,7 +189,7 @@ void Runner::generateFens(int argc, char* argv[])
 								for (int64_t q = 0; q < (int64_t)mates[t].size(); q++)
 									all.emplace_back(mates[t][q]);
 							}
-							saveFile("b:/outd/mates-various11.txt", all);
+							saveFile("b:/outd/mates-various12.txt", all);
 							cout << added << endl;
 						}
 					}

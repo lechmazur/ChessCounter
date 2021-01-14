@@ -740,7 +740,6 @@ bool LegalChecker::checkPawnStructures() const
 	if (!pawnStructureOk({ SQ_A4, SQ_A2, SQ_B2, SQ_B3 }, W_PAWN))
 		return false;
 
-
 	for (File c = FILE_B; c <= FILE_G; ++c)
 	{
 		//Detect these impossible pawn structures:
@@ -759,6 +758,59 @@ bool LegalChecker::checkPawnStructures() const
 			&& pieceFR(File(c + 1), RANK_7) == B_PAWN
 			&& pieceFR(c, RANK_6) == B_PAWN)
 			return false;
+	}
+
+	for (File c = FILE_B; c <= FILE_F; ++c)
+	{
+		//Detect these impossible pawn structures:
+		//  PP      
+		// P.PP
+		// ...
+		//4k3/8/8/8/8/4PP2/3P1PP1/4K3 w - - 0 2
+		if (pieceFR(c, RANK_3) == W_PAWN
+			&& pieceFR(File(c - 1), RANK_2) == W_PAWN
+			&& pieceFR(File(c + 1), RANK_2) == W_PAWN
+			&& pieceFR(File(c + 1), RANK_3) == W_PAWN
+			&& pieceFR(File(c + 2), RANK_2) == W_PAWN)
+		{
+			cout << fen() << endl;
+			return false;
+		}
+
+		if (pieceFR(c, RANK_6) == B_PAWN
+			&& pieceFR(File(c - 1), RANK_7) == B_PAWN
+			&& pieceFR(File(c + 1), RANK_7) == B_PAWN
+			&& pieceFR(File(c + 1), RANK_6) == B_PAWN
+			&& pieceFR(File(c + 2), RANK_7) == B_PAWN)
+		{
+			cout << fen() << endl;
+			return false;
+		}
+
+		//Detect these impossible pawn structures:
+		//  PP      
+		// PP.P
+		// ...
+		//4k3/8/8/8/8/4PP2/3P1PP1/4K3 w - - 0 2
+		if (pieceFR(c, RANK_3) == W_PAWN
+			&& pieceFR(File(c - 1), RANK_2) == W_PAWN
+			&& pieceFR(c, RANK_2) == W_PAWN
+			&& pieceFR(File(c + 1), RANK_3) == W_PAWN
+			&& pieceFR(File(c + 2), RANK_2) == W_PAWN)
+		{
+			cout << fen() << endl;
+			return false;
+		}
+
+		if (pieceFR(c, RANK_6) == B_PAWN
+			&& pieceFR(File(c - 1), RANK_7) == B_PAWN
+			&& pieceFR(c, RANK_7) == B_PAWN
+			&& pieceFR(File(c + 1), RANK_6) == B_PAWN
+			&& pieceFR(File(c + 2), RANK_7) == B_PAWN)
+		{
+			cout << fen() << endl;
+			return false;
+		}
 	}
 
 	return true;
